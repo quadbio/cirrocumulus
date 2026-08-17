@@ -86,8 +86,9 @@ def glue_transport_maps(tmap_0, tmap_1):
 
 
 def find_path(t0, t1, available_pairs, timepoints):
-    """Finds a path from t0 to t1 using the available day_pairs. Uses the finest resolution
-    possible.
+    """Finds a path from t0 to t1 using the available day_pairs.
+
+    Uses the finest resolution possible.
 
     Parameters
     ----------
