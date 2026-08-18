@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import anndata
+from anndata.io import read_elem
 from pandas import CategoricalDtype
 
 
@@ -8,6 +9,15 @@ DATA_TYPE_MODULE = "module"
 DATA_TYPE_UNS_KEY = "data_type"
 ADATA_MODULE_UNS_KEY = "anndata_module"
 ADATA_LAYERS_UNS_KEY = "anndata_layers"
+
+
+def is_categorical_group(node):
+    """Test whether a node of a backed store (h5py or zarr) encodes a pandas categorical.
+
+    anndata >= 0.8 writes a categorical as a group holding ``codes`` and ``categories`` instead of
+    an array with a ``categories`` attribute.
+    """
+    return getattr(node, "attrs", {}).get("encoding-type") == "categorical"
 
 
 def get_base(adata):
@@ -133,9 +143,7 @@ def dataset_schema(dataset, n_features=10):
         min_fold_change = 1
         params = rank_genes_groups["params"]
         if not isinstance(params, dict):
-            from anndata._io.zarr import read_attribute
-
-            params = {k: read_attribute(params[k]) for k in params.keys()}
+            params = read_elem(params)
 
         # pts and pts_rest in later scanpy versions
         rank_genes_groups_keys = list(rank_genes_groups.keys())
@@ -253,14 +261,19 @@ def dataset_schema(dataset, n_features=10):
                     )
 
     categories_node = dataset.obs["__categories"] if "__categories" in dataset.obs else None
+    obs_index_field = getattr(dataset.obs, "attrs", {}).get("_index")
     for key in dataset.obs.keys():
+        if key == obs_index_field:
+            continue
         if categories_node is not None and (key == "__categories" or key == "index"):
             continue
         val = dataset.obs[key]
         if categories_node is not None and key in categories_node:
             categories = categories_node[key][...]
             ordered = categories_node[key].attrs.get("ordered", False)
-            val = pd.Categorical.from_codes(val[...], categories, ordered=ordered)
+            val = pd.Series(pd.Categorical.from_codes(val[...], categories, ordered=ordered))
+        elif is_categorical_group(val):
+            val = pd.Series(read_elem(val))
 
         if (
             isinstance(val.dtype, CategoricalDtype)
@@ -273,7 +286,7 @@ def dataset_schema(dataset, n_features=10):
         if isinstance(val.dtype, CategoricalDtype):
             categories = val.cat.categories
             if len(categories) < 100:  # preserve order
-                category_to_order[key] = dataset.obs[key].cat.categories
+                category_to_order[key] = categories
 
             color_field = key + "_colors"
             if color_field in dataset.uns:
@@ -330,9 +343,7 @@ def dataset_schema(dataset, n_features=10):
     schema_dict["timepoint_field"] = dataset.uns.get("timepoint_field", "day")
     var_df = dataset.var
     if not isinstance(var_df, pd.DataFrame):
-        from anndata._io.zarr import read_attribute
-
-        var_df = read_attribute(dataset.var)
+        var_df = read_elem(dataset.var)
     var_df.index.name = "id"
     schema_dict["var"] = var_df.reset_index().to_dict(orient="records")
     modules_df = None
@@ -349,6 +360,9 @@ def dataset_schema(dataset, n_features=10):
 
     schema_dict["obs"] = obs
     schema_dict["obsCat"] = obs_cat
-    shape = dataset.shape if isinstance(dataset, anndata.AnnData) else dataset.X.attrs.shape
+    if isinstance(dataset, anndata.AnnData):
+        shape = dataset.shape
+    else:  # X is either a dense array or a group holding a sparse matrix
+        shape = dataset.X.attrs["shape"] if "shape" in dataset.X.attrs else dataset.X.shape
     schema_dict["shape"] = shape
     return schema_dict

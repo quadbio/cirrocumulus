@@ -95,3 +95,22 @@ def test_prepare_jsonl(test_data, measures, dimensions, continuous_obs, basis, t
         datasets=[test_data], output=os.path.join(output_dir, "test.jsonl"), output_format="jsonl"
     )
     prepare_data.execute()
+
+
+def test_read_anndata_zarr(test_data, measures, dimensions, continuous_obs, basis, tmp_path):
+    # a zarr store written by anndata itself, not by PrepareData: anndata >= 0.8 encodes a
+    # categorical obs column as a group (codes + categories), not as an array
+    path = str(tmp_path / "test.zarr")
+    test_data = test_data[:, measures].copy()
+    test_data.obs = test_data.obs[dimensions + continuous_obs]
+    test_data.write_zarr(path)
+
+    reader = ZarrDataset()
+    schema = reader.get_schema(fsspec.filesystem("file"), path)
+    assert schema["obsCat"] == dimensions
+    assert schema["obs"] == continuous_obs
+    assert list(schema["shape"]) == list(test_data.shape)
+    assert schema["categoryOrder"][dimensions[0]].tolist() == list(
+        test_data.obs[dimensions[0]].cat.categories
+    )
+    read_and_diff(reader, path, test_data, measures, dimensions, continuous_obs, basis)

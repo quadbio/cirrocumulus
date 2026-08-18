@@ -3,9 +3,14 @@ from abc import abstractmethod
 import pandas as pd
 from anndata import AnnData
 from anndata._core.sparse_dataset import sparse_dataset
+from anndata.io import read_elem
 
 from cirrocumulus.abstract_dataset import AbstractDataset
-from cirrocumulus.anndata_util import ADATA_LAYERS_UNS_KEY, ADATA_MODULE_UNS_KEY
+from cirrocumulus.anndata_util import (
+    ADATA_LAYERS_UNS_KEY,
+    ADATA_MODULE_UNS_KEY,
+    is_categorical_group,
+)
 
 
 # string_dtype = h5py.check_string_dtype(dataset.dtype)
@@ -113,15 +118,18 @@ class AbstractBackedDataset(AbstractDataset):
                         values = values.astype(str)
                 else:
                     dataset = group[key]
-                    values = dataset[...]
-                    if "categories" in dataset.attrs:
-                        categories = dataset.attrs["categories"]
-                        categories_dset = group[categories]
-                        categories = categories_dset[...]
-                        if pd.api.types.is_object_dtype(categories):
-                            categories = categories.astype(str)
-                        ordered = categories_dset.attrs.get("ordered", False)
-                        values = pd.Categorical.from_codes(values, categories, ordered=ordered)
+                    if is_categorical_group(dataset):
+                        values = read_elem(dataset)
+                    else:
+                        values = dataset[...]
+                        if "categories" in dataset.attrs:
+                            categories = dataset.attrs["categories"]
+                            categories_dset = group[categories]
+                            categories = categories_dset[...]
+                            if pd.api.types.is_object_dtype(categories):
+                                categories = categories.astype(str)
+                            ordered = categories_dset.attrs.get("ordered", False)
+                            values = pd.Categorical.from_codes(values, categories, ordered=ordered)
                 obs[key] = values
         if len(module_keys) > 0:
             module_ids = dataset_info["module"]
