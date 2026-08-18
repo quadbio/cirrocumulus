@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 
 from flask import request
 from okta_jwt_verifier import BaseJWTVerifier, JWTUtils

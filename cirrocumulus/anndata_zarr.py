@@ -5,10 +5,10 @@ from types import MappingProxyType
 from typing import Callable, Type, TypeVar
 from warnings import warn
 
-import zarr
+import numcodecs
 import numpy as np
 import pandas as pd
-import numcodecs
+import zarr
 from packaging import version
 from pandas import CategoricalDtype
 from scipy import sparse

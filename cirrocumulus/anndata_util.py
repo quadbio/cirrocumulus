@@ -1,8 +1,7 @@
+import anndata
 import numpy as np
 import pandas as pd
-import anndata
 from pandas import CategoricalDtype
-
 
 DATA_TYPE_MODULE = "module"
 DATA_TYPE_UNS_KEY = "data_type"
@@ -172,7 +171,8 @@ def dataset_schema(dataset, n_features=10):
                 markers_df = group_df
                 if has_fc:
                     markers_df = group_df[
-                        group_df["{}:logfoldchanges".format(group_name)] > min_fold_change
+                        group_df["{}:logfoldchanges".format(group_name)]
+                        > min_fold_change
                     ]
                 if len(markers_df) > 0:
                     marker_results.append(
@@ -252,7 +252,9 @@ def dataset_schema(dataset, n_features=10):
                         dict(category=key_name, name=str(group_name), features=features)
                     )
 
-    categories_node = dataset.obs["__categories"] if "__categories" in dataset.obs else None
+    categories_node = (
+        dataset.obs["__categories"] if "__categories" in dataset.obs else None
+    )
     for key in dataset.obs.keys():
         if categories_node is not None and (key == "__categories" or key == "index"):
             continue
@@ -349,6 +351,8 @@ def dataset_schema(dataset, n_features=10):
 
     schema_dict["obs"] = obs
     schema_dict["obsCat"] = obs_cat
-    shape = dataset.shape if isinstance(dataset, anndata.AnnData) else dataset.X.attrs.shape
+    shape = (
+        dataset.shape if isinstance(dataset, anndata.AnnData) else dataset.X.attrs.shape
+    )
     schema_dict["shape"] = shape
     return schema_dict

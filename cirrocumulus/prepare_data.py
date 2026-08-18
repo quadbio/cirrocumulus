@@ -1,11 +1,11 @@
-import os
-import logging
 import argparse
+import logging
+import os
 
+import anndata
 import h5py
 import numpy as np
 import pandas as pd
-import anndata
 import scipy.sparse
 from pandas import CategoricalDtype
 
@@ -14,10 +14,17 @@ from cirrocumulus.anndata_util import dataset_schema, get_scanpy_marker_keys
 from cirrocumulus.io_util import SPATIAL_HELP, filter_markers, get_markers, unique_id
 from cirrocumulus.util import get_fs, open_file, to_json
 
-
 logger = logging.getLogger("cirro")
 
-CLUSTER_FIELDS = ["anno", "cell_type", "celltype", "leiden", "louvain", "seurat_cluster", "cluster"]
+CLUSTER_FIELDS = [
+    "anno",
+    "cell_type",
+    "celltype",
+    "leiden",
+    "louvain",
+    "seurat_cluster",
+    "cluster",
+]
 
 
 def add_obs_to_h5ad(h5ad_path: str, obs: pd.DataFrame):
@@ -42,7 +49,11 @@ def whitelist_todict(whitelist):
         save_x = "X" in whitelist
         save_obs = "obs" in whitelist
         save_obsm = "obsm" in whitelist
-        [whitelist.remove(field) for field in ["X", "obs", "obsm"] if field in whitelist]
+        [
+            whitelist.remove(field)
+            for field in ["X", "obs", "obsm"]
+            if field in whitelist
+        ]
         for key in whitelist:
             dot_index = key.index(".")
             prefix = key[:dot_index].lower()
@@ -98,8 +109,12 @@ class PrepareData:
             for i in range(len(datasets)):
                 dataset = datasets[i]
                 if "group" not in dataset.var:
-                    dataset.var["group"] = dataset.uns.get("name", "dataset {}".format(i + 1))
-                if i > 0 and not np.array_equal(datasets[0].obs.index, dataset.obs.index):
+                    dataset.var["group"] = dataset.uns.get(
+                        "name", "dataset {}".format(i + 1)
+                    )
+                if i > 0 and not np.array_equal(
+                    datasets[0].obs.index, dataset.obs.index
+                ):
                     raise ValueError("obs ids are not equal")
             dataset = anndata.concat(datasets, axis=1, label="group", merge="unique")
         else:
@@ -115,7 +130,9 @@ class PrepareData:
         self.others = []
         self.dataset = dataset
         if save_whitelist["x"]:
-            if scipy.sparse.issparse(dataset.X) and not scipy.sparse.isspmatrix_csc(dataset.X):
+            if scipy.sparse.issparse(dataset.X) and not scipy.sparse.isspmatrix_csc(
+                dataset.X
+            ):
                 dataset.X = dataset.X.tocsc()
             for layer_name in dataset.layers.keys():
                 X = dataset.layers[layer_name]
@@ -138,7 +155,9 @@ class PrepareData:
                         dataset.obs[name] = dataset.obs[name].astype("category")
                 else:
                     self.others.append(name)
-            elif not pd.api.types.is_string_dtype(c) and not pd.api.types.is_object_dtype(c):
+            elif not pd.api.types.is_string_dtype(
+                c
+            ) and not pd.api.types.is_object_dtype(c):
                 self.measures.append("obs/" + name)
             else:
                 self.others.append(name)
@@ -158,12 +177,19 @@ class PrepareData:
             for field in dataset.obs.columns:
                 field_lc = field.lower()
                 for cluster_field in CLUSTER_FIELDS:
-                    if field_lc.find(cluster_field) != -1 and cluster_field not in existing_fields:
+                    if (
+                        field_lc.find(cluster_field) != -1
+                        and cluster_field not in existing_fields
+                    ):
                         groups.append(field)
                         break
 
             self.groups = groups
-        if self.save_whitelist["x"] and self.groups is not None and len(self.groups) > 0:
+        if (
+            self.save_whitelist["x"]
+            and self.groups is not None
+            and len(self.groups) > 0
+        ):
             use_pegasus = False
             use_scanpy = False
             try:
@@ -184,7 +210,9 @@ class PrepareData:
                 except ModuleNotFoundError:
                     pass
             if not use_pegasus and not use_scanpy:
-                raise ValueError("Please install pegasuspy or scanpy to compute markers")
+                raise ValueError(
+                    "Please install pegasuspy or scanpy to compute markers"
+                )
             first_time = True
 
             for group in self.groups:
@@ -204,7 +232,9 @@ class PrepareData:
 
                 if field in dataset.obs:
                     if not isinstance(dataset.obs[field].dtype, CategoricalDtype):
-                        dataset.obs[field] = dataset.obs[field].astype(str).astype("category")
+                        dataset.obs[field] = (
+                            dataset.obs[field].astype(str).astype("category")
+                        )
                     if len(dataset.obs[field].cat.categories) > 1:
                         key_added = "rank_genes_" + str(field)
                         value_counts = dataset.obs[field].value_counts()
@@ -234,7 +264,9 @@ class PrepareData:
                                     groups=filtered_value_counts.index.to_list(),
                                 )
                 else:
-                    raise ValueError(group + " not found in " + ", ".join(dataset.obs.columns))
+                    raise ValueError(
+                        group + " not found in " + ", ".join(dataset.obs.columns)
+                    )
         schema = self.get_schema()
         schema["format"] = output_format
         if output_format in ["parquet", "zarr"]:
@@ -268,7 +300,9 @@ class PrepareData:
                     if is_gzip
                     else os.path.join(uns_dir, result_id + ".json")
                 )
-                with open_file(result_path, "wt", compression="gzip" if is_gzip else None) as out:
+                with open_file(
+                    result_path, "wt", compression="gzip" if is_gzip else None
+                ) as out:
                     out.write(json_result)
         images = dataset.uns.pop("images", None)
         if images is not None:
@@ -283,15 +317,21 @@ class PrepareData:
         if output_format == "parquet":
             from cirrocumulus.parquet_output import save_dataset_pq
 
-            save_dataset_pq(dataset, schema, self.base_output, filesystem, self.save_whitelist)
+            save_dataset_pq(
+                dataset, schema, self.base_output, filesystem, self.save_whitelist
+            )
         elif output_format == "jsonl":
             from cirrocumulus.jsonl_io import save_dataset_jsonl
 
-            save_dataset_jsonl(dataset, schema, output_dir, self.base_output, filesystem)
+            save_dataset_jsonl(
+                dataset, schema, output_dir, self.base_output, filesystem
+            )
         elif output_format == "zarr":
             from cirrocumulus.zarr_output import save_dataset_zarr
 
-            save_dataset_zarr(dataset, schema, self.base_output, filesystem, self.save_whitelist)
+            save_dataset_zarr(
+                dataset, schema, self.base_output, filesystem, self.save_whitelist
+            )
         else:
             raise ValueError("Unknown format")
 
@@ -316,10 +356,15 @@ def create_parser(description=False):
     parser = argparse.ArgumentParser(
         description="Prepare a dataset for cirrocumulus server" if description else None
     )
-    parser.add_argument("dataset", help="Path to a h5ad, loom, or Seurat (rds) file", nargs="+")
+    parser.add_argument(
+        "dataset", help="Path to a h5ad, loom, or Seurat (rds) file", nargs="+"
+    )
     parser.add_argument("--out", help="Path to output directory")
     parser.add_argument(
-        "--format", help="Output format", choices=["parquet", "jsonl", "zarr"], default="zarr"
+        "--format",
+        help="Output format",
+        choices=["parquet", "jsonl", "zarr"],
+        default="zarr",
     )
     parser.add_argument(
         "--whitelist",
@@ -343,7 +388,10 @@ def create_parser(description=False):
         action="append",
     )
     parser.add_argument(
-        "--group_nfeatures", help="Number of marker genes/features to include", type=int, default=10
+        "--group_nfeatures",
+        help="Number of marker genes/features to include",
+        type=int,
+        default=10,
     )
     parser.add_argument("--spatial", help=SPATIAL_HELP)
     return parser
@@ -363,7 +411,9 @@ def main(argsv):
     if out is None:
         out = os.path.splitext(os.path.basename(input_datasets[0]))[0]
     out = out.rstrip("/")
-    output_format2extension = dict(parquet=".cpq", jsonl=".jsonl", zarr=".zarr", h5ad=".h5ad")
+    output_format2extension = dict(
+        parquet=".cpq", jsonl=".jsonl", zarr=".zarr", h5ad=".h5ad"
+    )
     if not out.lower().endswith(output_format2extension[output_format]):
         out += output_format2extension[output_format]
     save_whitelist = whitelist_todict(save_whitelist)

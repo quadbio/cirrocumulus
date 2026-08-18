@@ -1,7 +1,7 @@
 import os
 
-import pytest
 import anndata
+import pytest
 import scipy.sparse
 
 from cirrocumulus.anndata_dataset import AnndataDataset

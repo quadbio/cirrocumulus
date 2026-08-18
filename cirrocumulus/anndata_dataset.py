@@ -1,15 +1,18 @@
 import logging
 
-import pandas as pd
 import anndata
+import pandas as pd
 import scipy.sparse
 from anndata import AnnData
 from pandas import CategoricalDtype
 
 from cirrocumulus.abstract_dataset import AbstractDataset
-from cirrocumulus.anndata_util import ADATA_LAYERS_UNS_KEY, ADATA_MODULE_UNS_KEY, dataset_schema
+from cirrocumulus.anndata_util import (
+    ADATA_LAYERS_UNS_KEY,
+    ADATA_MODULE_UNS_KEY,
+    dataset_schema,
+)
 from cirrocumulus.io_util import add_spatial, read_star_fusion_file
-
 
 logger = logging.getLogger("cirro")
 
@@ -45,9 +48,15 @@ def read_adata(path, filesystem, backed=False, spatial_directory=None, use_raw=F
 
                 del adata.obs["x_centroid"]
                 del adata.obs["y_centroid"]
-        if filesystem.exists(analysis_path) and filesystem.isdir(analysis_path):  # xenium
+        if filesystem.exists(analysis_path) and filesystem.isdir(
+            analysis_path
+        ):  # xenium
             clustering_results = filesystem.glob(
-                analysis_path + filesystem.sep + "clustering" + filesystem.sep + "**clusters.csv"
+                analysis_path
+                + filesystem.sep
+                + "clustering"
+                + filesystem.sep
+                + "**clusters.csv"
             )
             for clustering_result in clustering_results:
                 df = pd.read_csv(clustering_result, index_col="Barcode")
@@ -60,16 +69,20 @@ def read_adata(path, filesystem, backed=False, spatial_directory=None, use_raw=F
                     df = df.rename(rename, axis=1)
                     adata.obs = adata.obs.join(df)
             umap_results = filesystem.glob(
-                analysis_path + filesystem.sep + "umap" + filesystem.sep + "**projection.csv"
+                analysis_path
+                + filesystem.sep
+                + "umap"
+                + filesystem.sep
+                + "**projection.csv"
             )
             for umap_result in umap_results:
                 df = pd.read_csv(umap_result, index_col="Barcode")
                 if len(df.columns) == 2 or len(df.columns) == 3:
                     df.index = df.index.astype(str)
                     adata.obs = adata.obs.join(df)
-                    adata.obsm["X_" + "_".join(umap_result.split(filesystem.sep)[-2:])] = adata.obs[
-                        df.columns
-                    ].values
+                    adata.obsm[
+                        "X_" + "_".join(umap_result.split(filesystem.sep)[-2:])
+                    ] = adata.obs[df.columns].values
                     for c in df.columns:
                         del adata.obs[c]
 
@@ -102,7 +115,11 @@ def read_adata(path, filesystem, backed=False, spatial_directory=None, use_raw=F
         if adata.raw is not None and adata.shape[0] == adata.raw.shape[0]:
             print("Using adata.raw")
             adata = anndata.AnnData(
-                X=adata.raw.X, var=adata.raw.var, obs=adata.obs, obsm=adata.obsm, uns=adata.uns
+                X=adata.raw.X,
+                var=adata.raw.var,
+                obs=adata.obs,
+                obsm=adata.obsm,
+                uns=adata.uns,
             )
     else:
         if backed:
@@ -123,7 +140,11 @@ def read_adata(path, filesystem, backed=False, spatial_directory=None, use_raw=F
     if use_raw and adata.raw is not None and adata.shape[0] == adata.raw.shape[0]:
         logger.info("Using adata.raw")
         adata = anndata.AnnData(
-            X=adata.raw.X, var=adata.raw.var, obs=adata.obs, obsm=adata.obsm, uns=adata.uns
+            X=adata.raw.X,
+            var=adata.raw.var,
+            obs=adata.obs,
+            obsm=adata.obsm,
+            uns=adata.uns,
         )
     adata.var_names_make_unique()
     if spatial_directory is not None:
@@ -131,7 +152,9 @@ def read_adata(path, filesystem, backed=False, spatial_directory=None, use_raw=F
             logger.info("No spatial data found in {}".format(spatial_directory))
 
     for field in CATEGORICAL_FIELDS_CONVERT:
-        if field in adata.obs and not isinstance(adata.obs[field].dtype, CategoricalDtype):
+        if field in adata.obs and not isinstance(
+            adata.obs[field].dtype, CategoricalDtype
+        ):
             logger.info("Converting {} to categorical".format(field))
             adata.obs[field] = adata.obs[field].astype(str).astype("category")
     return adata
@@ -183,7 +206,9 @@ class AnndataDataset(AbstractDataset):
 
     @staticmethod
     def get_X(adata, keys, layer=None):
-        if len(keys) == 1 and isinstance(keys[0], slice):  # special case if slice specified
+        if len(keys) == 1 and isinstance(
+            keys[0], slice
+        ):  # special case if slice specified
             keys = keys[0]
         d = adata[:, keys]
         X = d.X if layer is None else d.layers[layer]

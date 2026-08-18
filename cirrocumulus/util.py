@@ -1,14 +1,13 @@
 import os
 from urllib.parse import urlparse
 
-import numpy as np
 import fsspec
+import numpy as np
 import pandas as pd
 import pandas._libs.json as ujson
 from flask import make_response
 
 from cirrocumulus.envir import CIRRO_DATASET_PROVIDERS
-
 
 try:
     dumps = ujson.dumps
@@ -44,7 +43,9 @@ def create_instance(class_name):
 
 def get_scheme(path):
     pr = urlparse(path)
-    if len(pr.scheme) <= 1:  # for file paths: /foo/bar/test.h5ad or C:/foo/bar/test.h5ad
+    if (
+        len(pr.scheme) <= 1
+    ):  # for file paths: /foo/bar/test.h5ad or C:/foo/bar/test.h5ad
         return "file"
     return pr.scheme
 
@@ -83,8 +84,8 @@ def get_email_domain(email):
 
 
 def load_dataset_schema(url):
-    import os
     import json
+    import os
 
     def get_extension(path):
         name, ext = os.path.splitext(path)
@@ -156,7 +157,9 @@ def write_top_half_gct(f, row_metadata_df, col_metadata_df, metadata_null, fille
     top_half_df.to_csv(f, header=False, index=False, sep="\t")
 
 
-def write_bottom_half_gct(f, row_metadata_df, data_df, data_null, data_float_format, metadata_null):
+def write_bottom_half_gct(
+    f, row_metadata_df, data_df, data_null, data_float_format, metadata_null
+):
     """Write the bottom half of the gct file: row metadata and data.
 
     Args:
@@ -170,13 +173,18 @@ def write_bottom_half_gct(f, row_metadata_df, data_df, data_null, data_float_for
         None
     """
     # create the left side of the bottom half of the gct (for the row metadata)
-    size_of_left_bottom_half_df = (row_metadata_df.shape[0], 1 + row_metadata_df.shape[1])
+    size_of_left_bottom_half_df = (
+        row_metadata_df.shape[0],
+        1 + row_metadata_df.shape[1],
+    )
     left_bottom_half_df = pd.DataFrame(
         np.full(size_of_left_bottom_half_df, metadata_null, dtype=object)
     )
 
     # create the full bottom half by combining with the above with the matrix data
-    bottom_half_df = pd.concat([left_bottom_half_df, data_df.reset_index(drop=True)], axis=1)
+    bottom_half_df = pd.concat(
+        [left_bottom_half_df, data_df.reset_index(drop=True)], axis=1
+    )
     bottom_half_df.columns = range(bottom_half_df.shape[1])
 
     # Insert the rids
@@ -190,7 +198,12 @@ def write_bottom_half_gct(f, row_metadata_df, data_df, data_null, data_float_for
 
     # Write bottom_half_df to file
     bottom_half_df.to_csv(
-        f, header=False, index=False, sep="\t", na_rep=data_null, float_format=data_float_format
+        f,
+        header=False,
+        index=False,
+        sep="\t",
+        na_rep=data_null,
+        float_format=data_float_format,
     )
 
 
@@ -208,4 +221,6 @@ def adata2gct(adata, f):
         + "\n"
     )
     write_top_half_gct(f, adata.obs, adata.var, "", "")
-    write_bottom_half_gct(f, adata.obs, pd.DataFrame(adata.X), "", data_float_format, "")
+    write_bottom_half_gct(
+        f, adata.obs, pd.DataFrame(adata.X), "", data_float_format, ""
+    )

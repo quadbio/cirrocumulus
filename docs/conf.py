@@ -15,7 +15,6 @@
 import os
 import sys
 
-
 sys.path.insert(0, os.path.abspath("."))
 import cirrocumulus  # noqa
 
@@ -23,9 +22,7 @@ import cirrocumulus  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "Cirrocumulus"
-copyright = (
-    "2023 The Broad Institute, Inc. and The General Hospital Corporation. All rights reserved."
-)
+copyright = "2023 The Broad Institute, Inc. and The General Hospital Corporation. All rights reserved."
 author = "Joshua Gould, Bo Li, and Yiming Yang"
 
 # The short X.Y version

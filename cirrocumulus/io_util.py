@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 
-
 SPATIAL_HELP = (
     "Directory containing 10x visium spatial data (tissue_hires_image.png, scalefactors_json.json, "
     + "and tissue_positions_list.csv) "
@@ -14,7 +13,9 @@ SPATIAL_HELP = (
 def __add_visium(adata, spatial_directory):
     scale_factors_path = os.path.join(spatial_directory, "scalefactors_json.json")
     tissue_hires_image_path = os.path.join(spatial_directory, "tissue_hires_image.png")
-    tissue_positions_list_path = os.path.join(spatial_directory, "tissue_positions_list.csv")
+    tissue_positions_list_path = os.path.join(
+        spatial_directory, "tissue_positions_list.csv"
+    )
     tissue_positions_path = os.path.join(spatial_directory, "tissue_positions.csv")
     is_visium = True
     for path in [scale_factors_path, tissue_hires_image_path]:
@@ -86,9 +87,13 @@ def __add_generic_spatial(adata, spatial_directory):
         name, ext = os.path.splitext(f)
         ext = ext.lower()
         if ext in image_extensions:
-            positions_path = os.path.join(spatial_directory, "positions." + name + ".csv")
+            positions_path = os.path.join(
+                spatial_directory, "positions." + name + ".csv"
+            )
             if os.path.exists(positions_path):
-                diameter_path = os.path.join(spatial_directory, "diameter." + name + ".txt")
+                diameter_path = os.path.join(
+                    spatial_directory, "diameter." + name + ".txt"
+                )
                 spot_diameter = None
                 if os.path.exists(diameter_path):
                     with open(diameter_path, "rt") as diameter_in:
@@ -187,18 +192,26 @@ def get_markers(marker_paths):
                 for cell_type in marker_json["cell_types"]:
                     name = cell_type["name"]
                     features = get_cell_type_genes(cell_type)
-                    marker_results.append(dict(category=title, name=name, features=features))
+                    marker_results.append(
+                        dict(category=title, name=name, features=features)
+                    )
                     if "subtypes" in cell_type:
                         for cell_sub_type in cell_type["subtypes"]["cell_types"]:
                             subtype_name = cell_sub_type["name"]
                             subtype_features = get_cell_type_genes(cell_sub_type)
                             marker_results.append(
-                                dict(category=title, name=subtype_name, features=subtype_features)
+                                dict(
+                                    category=title,
+                                    name=subtype_name,
+                                    features=subtype_features,
+                                )
                             )
             else:
                 key = os.path.splitext(os.path.basename(marker_path))[0]
                 for name in marker_json:
-                    marker_results.append(dict(category=key, name=name, features=marker_json[name]))
+                    marker_results.append(
+                        dict(category=key, name=name, features=marker_json[name])
+                    )
     return marker_results
 
 

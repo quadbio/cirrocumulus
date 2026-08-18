@@ -26,13 +26,22 @@ def mode_agg(x):
 
 class EmbeddingAggregator:
     def __init__(
-        self, measures, dimensions, nbins, basis, agg_function="max", quick=True, coords=True
+        self,
+        measures,
+        dimensions,
+        nbins,
+        basis,
+        agg_function="max",
+        quick=True,
+        coords=True,
     ):
         self.nbins = nbins
         self.agg_function = agg_function
         self.measures = measures
         self.dimensions = dimensions
-        self.add_count = nbins is not None and len(measures) == 0 and len(dimensions) == 0
+        self.add_count = (
+            nbins is not None and len(measures) == 0 and len(dimensions) == 0
+        )
         self.basis = basis
         self.quick = quick  # do not compute purity.
         self.coords = coords  # return coordinates
@@ -51,9 +60,9 @@ class EmbeddingAggregator:
             else:
                 column_min = values.min()
                 column_max = values.max()
-            df[name] = np.floor(np.interp(values, [column_min, column_max], [0, nbins - 1])).astype(
-                int
-            )
+            df[name] = np.floor(
+                np.interp(values, [column_min, column_max], [0, nbins - 1])
+            ).astype(int)
         if len(coordinate_columns) == 2:
             df[bin_name] = df[coordinate_columns[0]] * nbins + df[coordinate_columns[1]]
         else:
@@ -102,7 +111,9 @@ class EmbeddingAggregator:
                     agg_dict[column] = agg_function
 
             for column in dimensions:
-                agg_dict[column] = (mode_agg, purity_agg) if compute_purity else mode_agg
+                agg_dict[column] = (
+                    (mode_agg, purity_agg) if compute_purity else mode_agg
+                )
             if add_count:
                 agg_dict["__count"] = "sum"
 
@@ -139,7 +150,8 @@ class EmbeddingAggregator:
             if is_sparse:
                 # result['values'][column] = series.sparse.to_dense()
                 result["values"][column] = dict(
-                    indices=series.values.sp_index.indices, values=series.values.sp_values
+                    indices=series.values.sp_index.indices,
+                    values=series.values.sp_values,
                 )
             else:
                 if isinstance(series.dtype, CategoricalDtype):

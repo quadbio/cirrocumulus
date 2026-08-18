@@ -1,11 +1,10 @@
-import os
 import logging
+import os
 
 import numpy as np
 import scipy.sparse
 
 from cirrocumulus.util import dumps
-
 
 logger = logging.getLogger("cirro")
 

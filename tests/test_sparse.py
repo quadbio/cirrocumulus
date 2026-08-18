@@ -1,8 +1,8 @@
+import anndata as ad
 import h5py
-import zarr
 import numpy as np
 import pytest
-import anndata as ad
+import zarr
 from anndata._core.sparse_dataset import sparse_dataset
 from anndata.tests.helpers import (
     array_bool_subset,
@@ -12,7 +12,6 @@ from anndata.tests.helpers import (
     subset_func,
 )
 from scipy import sparse
-
 
 subset_func2 = subset_func
 

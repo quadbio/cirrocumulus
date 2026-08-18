@@ -1,5 +1,5 @@
-import os
 import datetime
+import os
 
 from bson import ObjectId
 from pymongo import MongoClient
@@ -161,7 +161,8 @@ class MongoDb(AbstractDB):
             view["dataset_id"] = dataset_id
         if view.get("id") is None:
             return dict(
-                id=str(collection.insert_one(view).inserted_id), last_updated=view["last_updated"]
+                id=str(collection.insert_one(view).inserted_id),
+                last_updated=view["last_updated"],
             )
         else:
             view_id = view.pop("id")
@@ -192,7 +193,10 @@ class MongoDb(AbstractDB):
         self.db.jobs.delete_many(dict(dataset_id=dataset_id))
 
     def upsert_dataset(self, email, readers, dataset):
-        if dataset.get("id") is None and not self.capabilities()[SERVER_CAPABILITY_ADD_DATASET]:
+        if (
+            dataset.get("id") is None
+            and not self.capabilities()[SERVER_CAPABILITY_ADD_DATASET]
+        ):
             return
         if (
             dataset.get("id") is not None
@@ -333,7 +337,11 @@ class MongoDb(AbstractDB):
         self.get_dataset(email, doc["dataset_id"])
         collection.update_one(
             dict(_id=ObjectId(job_id)),
-            {"$set": dict(annotations=annotations, last_updated=datetime.datetime.utcnow())},
+            {
+                "$set": dict(
+                    annotations=annotations, last_updated=datetime.datetime.utcnow()
+                )
+            },
         )
 
     def update_job(self, email, job_id, status, result):

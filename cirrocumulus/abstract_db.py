@@ -23,11 +23,15 @@ class AbstractDB:
         c[SERVER_CAPABILITY_RENAME_CATEGORIES] = to_bool(
             os.environ.get(SERVER_CAPABILITY_RENAME_CATEGORIES, "True")
         )
-        c[SERVER_CAPABILITY_JOBS] = to_bool(os.environ.get(SERVER_CAPABILITY_JOBS, "True"))
+        c[SERVER_CAPABILITY_JOBS] = to_bool(
+            os.environ.get(SERVER_CAPABILITY_JOBS, "True")
+        )
         c[SERVER_CAPABILITY_FEATURE_SETS] = to_bool(
             os.environ.get(SERVER_CAPABILITY_FEATURE_SETS, "True")
         )
-        c[SERVER_CAPABILITY_LINKS] = to_bool(os.environ.get(SERVER_CAPABILITY_LINKS, "True"))
+        c[SERVER_CAPABILITY_LINKS] = to_bool(
+            os.environ.get(SERVER_CAPABILITY_LINKS, "True")
+        )
         c[SERVER_CAPABILITY_EDIT_DATASET] = to_bool(
             os.environ.get(SERVER_CAPABILITY_EDIT_DATASET, "True")
         )
@@ -162,8 +166,9 @@ class AbstractDB:
         raise NotImplementedError()
 
     def upsert_dataset(self, email, readers, dataset):
-        """Upserts a dataset. If dataset.id is None then a new dataset is inserted.
-        Dataset should have name, url, description, title, species, and any other additional fields to store
+        """Upserts a dataset.
+
+        If dataset.id is None then a new dataset is inserted. Dataset should have name, url, description, title, species, and any other additional fields to store
         Args:
               email: User email or None
               readers: List of allowed readers

@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 
 import anndata
 
@@ -36,7 +36,9 @@ def configure_app(app, list_of_dataset_paths, spatial_directories, marker_paths)
         pass
     app.config[CIRRO_AUTH] = NoAuth()
     os.environ[CIRRO_JOB_TYPE + "de"] = "cirrocumulus.job_api.run_de"
-    os.environ[CIRRO_JOB_TYPE + "ot_trajectory"] = "cirrocumulus.job_api.run_ot_trajectory"
+    os.environ[CIRRO_JOB_TYPE + "ot_trajectory"] = (
+        "cirrocumulus.job_api.run_ot_trajectory"
+    )
     anndata_dataset = AnndataDataset()
     dataset_api.add(anndata_dataset)
     dataset_ids = []
@@ -47,9 +49,13 @@ def configure_app(app, list_of_dataset_paths, spatial_directories, marker_paths)
         if len(dataset_paths) > 1:
             datasets = []
             for i in range(len(dataset_paths)):
-                dataset = anndata_dataset.get_data(get_fs(dataset_paths[i]), dataset_paths[i])
+                dataset = anndata_dataset.get_data(
+                    get_fs(dataset_paths[i]), dataset_paths[i]
+                )
                 if "group" not in dataset.var:
-                    dataset.var["group"] = dataset.uns.get("name", "dataset {}".format(i + 1))
+                    dataset.var["group"] = dataset.uns.get(
+                        "name", "dataset {}".format(i + 1)
+                    )
                 datasets.append(dataset)
             adata = anndata.concat(datasets, axis=1, label="group", merge="unique")
             dataset.obsm = datasets[0].obsm
@@ -84,7 +90,9 @@ def create_app():
     from cirrocumulus.api import cirro_blueprint
 
     app = Flask(
-        __name__, static_folder=os.path.join(cirrocumulus.__path__[0], "client"), static_url_path=""
+        __name__,
+        static_folder=os.path.join(cirrocumulus.__path__[0], "client"),
+        static_url_path="",
     )
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
     app.register_blueprint(cirro_blueprint, url_prefix="/api")
@@ -101,7 +109,9 @@ def create_app():
 
 
 def create_parser(description=False):
-    parser = argparse.ArgumentParser(description="Run cirrocumulus" if description else None)
+    parser = argparse.ArgumentParser(
+        description="Run cirrocumulus" if description else None
+    )
     parser.add_argument(
         "dataset",
         help="Path(s) to dataset in h5ad, loom, Seurat, TileDB, zarr, or STAR-Fusion format. Separate multiple datasets with "
@@ -120,14 +130,22 @@ def create_parser(description=False):
 
     parser.add_argument("--port", help="Server port", default=5000, type=int)
     parser.add_argument(
-        "--no-open", dest="no_open", help="Do not open your web browser", action="store_true"
+        "--no-open",
+        dest="no_open",
+        help="Do not open your web browser",
+        action="store_true",
     )
     parser.add_argument(
-        "--results", help="URL to save user computed results (e.g. differential expression)"
+        "--results",
+        help="URL to save user computed results (e.g. differential expression)",
     )
-    parser.add_argument("--ontology", help="Path to ontology in OBO format for annotation")
     parser.add_argument(
-        "--tmap", help="Path(s) to transport maps directory computed with WOT", nargs="*"
+        "--ontology", help="Path to ontology in OBO format for annotation"
+    )
+    parser.add_argument(
+        "--tmap",
+        help="Path(s) to transport maps directory computed with WOT",
+        nargs="*",
     )
     return parser
 
@@ -140,7 +158,9 @@ def main(argsv):
         os.environ[CIRRO_JOB_RESULTS] = os.path.join(
             os.path.dirname(args.dataset[0].rstrip("/")), "results"
         )
-    get_fs(os.environ[CIRRO_JOB_RESULTS]).makedirs(os.environ[CIRRO_JOB_RESULTS], exist_ok=True)
+    get_fs(os.environ[CIRRO_JOB_RESULTS]).makedirs(
+        os.environ[CIRRO_JOB_RESULTS], exist_ok=True
+    )
     if args.ontology is not None:
         os.environ[CIRRO_CELL_ONTOLOGY] = args.ontology
     app = create_app()
@@ -168,7 +188,7 @@ def main(argsv):
                 import sys
 
                 sys.exit("Address already in use")
-        except:
+        except:  # noqa:E722
             pass
         webbrowser.open(url)
     from flask import cli
