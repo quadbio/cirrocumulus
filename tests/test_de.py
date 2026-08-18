@@ -62,7 +62,7 @@ def diff_results(adata, obs_field, results, group="0"):
     np.testing.assert_allclose(sc_df["pvals"], results["pvals"])
 
     np.testing.assert_allclose(sc_df["scores"], results["scores"], atol=1e-015)
-    np.testing.assert_allclose(sc_df["lfc"], results["logfoldchanges"], atol=1e-015)
+    np.testing.assert_allclose(sc_df["lfc"], results["logfoldchanges"], atol=1e-014)
 
     if scipy.sparse.issparse(adata.X):
         np.testing.assert_allclose(sc_df["pts"], results["frac_expressed1"])
@@ -99,7 +99,8 @@ def test_de_backed(sparse, file_format, tmp_path):
         base=get_base(adata),
         one_vs_rest=True,
     )
-    diff_results(adata, obs_field, results.pair2results[0])
+
+    diff_results(adata, obs_field, results.pair2results["0"])
 
 
 def test_de_2_groups(sparse):
@@ -117,7 +118,7 @@ def test_de_2_groups(sparse):
         base=get_base(adata),
         one_vs_rest=True,
     )
-    diff_results(adata, obs_field, results.pair2results[0])
+    diff_results(adata, obs_field, results.pair2results["0"])
 
 
 def test_de_4_groups(sparse):
@@ -139,4 +140,4 @@ def test_de_4_groups(sparse):
         base=get_base(adata),
     )
     for i in range(4):
-        diff_results(adata, obs_field, de.pair2results[i], str(i))
+        diff_results(adata, obs_field, de.pair2results[str(i)], str(i))

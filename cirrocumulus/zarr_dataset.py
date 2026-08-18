@@ -14,7 +14,7 @@ class ZarrDataset(AbstractBackedDataset):
         return ["zarr"]
 
     def is_group(self, node):
-        return isinstance(node, zarr.hierarchy.Group)
+        return isinstance(node, zarr.Group)
 
     def open_group(self, filesystem, path):
         return zarr.open_group(filesystem.get_mapper(path), mode="r")
