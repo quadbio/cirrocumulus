@@ -162,8 +162,9 @@ class AbstractDB:
         raise NotImplementedError()
 
     def upsert_dataset(self, email, readers, dataset):
-        """Upserts a dataset. If dataset.id is None then a new dataset is inserted.
-        Dataset should have name, url, description, title, species, and any other additional fields to store
+        """Upserts a dataset.
+
+        If dataset.id is None then a new dataset is inserted. Dataset should have name, url, description, title, species, and any other additional fields to store
         Args:
               email: User email or None
               readers: List of allowed readers
