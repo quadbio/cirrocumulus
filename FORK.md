@@ -12,9 +12,12 @@ away and `uv tool install cirrocumulus` is enough again.
 | [#230](https://github.com/lilab-bcb/cirrocumulus/pull/230) | `X_stats` returned 2-D columns for sparse `X`, 500ing the composition view |
 | [#231](https://github.com/lilab-bcb/cirrocumulus/pull/231) | `DotPlotAggregator` was written for a DataFrame but is passed an AnnData, 500ing the dot plot view; multi-dimension grouping was broken too |
 | [#232](https://github.com/lilab-bcb/cirrocumulus/pull/232) | pre-commit.ci could not build its hook environment on Python 3.12+ |
+| [#233](https://github.com/lilab-bcb/cirrocumulus/pull/233) | zarr stores written by modern anndata could not be opened at all |
 
-Each PR lives on its own branch off `upstream/main`. `main` here is upstream plus those
-branches merged, and is what we install.
+Each PR lives on its own branch off `upstream/main`. `main` here is upstream plus the
+branches we actually need merged, and is what we install. #233 is deliberately *not*
+merged into `main`: we feed the viewer an h5ad, so it buys us nothing and only adds
+divergence to carry.
 
 ## Install
 
