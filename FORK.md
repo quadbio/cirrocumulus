@@ -2,10 +2,14 @@
 
 Why this fork exists, and how to keep it working.
 
-Upstream is [lilab-bcb/cirrocumulus](https://github.com/lilab-bcb/cirrocumulus) and is
-actively maintained. We run from source only because a few server-side bugs made most of
-the UI unusable; each one is open as an upstream PR, and once they land this fork can go
-away and `uv tool install cirrocumulus` is enough again.
+Upstream is [lilab-bcb/cirrocumulus](https://github.com/lilab-bcb/cirrocumulus). We run
+from source because a few server-side bugs made most of the UI unusable.
+
+**Assume this fork is permanent.** The last human commit to upstream `main` is
+2025-09-24 and the newest release, 1.1.61, is from the same day; the only activity since
+is a pre-commit.ci bot pushing to its own config branch. Our fixes are all open as
+upstream PRs and would be nice to have merged, but nothing here should depend on that
+happening.
 
 | PR | What it fixes |
 | --- | --- |
@@ -17,7 +21,8 @@ away and `uv tool install cirrocumulus` is enough again.
 Each PR lives on its own branch off `upstream/main`. `main` here is upstream plus the
 branches we actually need merged, and is what we install. #233 is deliberately *not*
 merged into `main`: we feed the viewer an h5ad, so it buys us nothing and only adds
-divergence to carry.
+divergence to carry. Keep that bar for anything else — with upstream dormant, every
+merged branch is divergence we own forever.
 
 ## Install
 
