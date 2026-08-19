@@ -38,7 +38,9 @@ class DotPlotAggregator:
                 and len(df[dimension_name].dtype.categories) <= 1
             ):
                 continue
-            agg_result = df.groupby(dimension_name, observed=True).agg([mean, percent_expressed])
+            agg_result = df.groupby(dimension_name, observed=True).agg(
+                [mean, percent_expressed]
+            )
 
             values = []
             dotplot_result = {

@@ -7,7 +7,6 @@ from anndata._core.sparse_dataset import sparse_dataset
 from cirrocumulus.abstract_dataset import AbstractDataset
 from cirrocumulus.anndata_util import ADATA_LAYERS_UNS_KEY, ADATA_MODULE_UNS_KEY
 
-
 # string_dtype = h5py.check_string_dtype(dataset.dtype)
 # if (string_dtype is not None) and (string_dtype.encoding == "utf-8"):
 #     dataset = dataset.asstr()
@@ -103,7 +102,9 @@ class AbstractBackedDataset(AbstractDataset):
         if len(X_keys) > 0:
             X, var = self.get_X(dataset_info["var"], X_keys, root["X"])
         if len(obs_keys) > 0:
-            obs = pd.DataFrame(index=pd.RangeIndex(dataset_info["shape"][0]).astype(str))
+            obs = pd.DataFrame(
+                index=pd.RangeIndex(dataset_info["shape"][0]).astype(str)
+            )
             group = root["obs"]
             for key in obs_keys:
                 if key == "index":
@@ -121,13 +122,17 @@ class AbstractBackedDataset(AbstractDataset):
                         if pd.api.types.is_object_dtype(categories):
                             categories = categories.astype(str)
                         ordered = categories_dset.attrs.get("ordered", False)
-                        values = pd.Categorical.from_codes(values, categories, ordered=ordered)
+                        values = pd.Categorical.from_codes(
+                            values, categories, ordered=ordered
+                        )
                 obs[key] = values
         if len(module_keys) > 0:
             module_ids = dataset_info["module"]
             module_X_node = root["uns/module/X"]
             module_X, module_var = self.get_X(module_ids, module_keys, module_X_node)
-            adata_modules = AnnData(X=module_X, var=module_var, obs=obs)  # obs is shared
+            adata_modules = AnnData(
+                X=module_X, var=module_var, obs=obs
+            )  # obs is shared
         if len(basis_keys) > 0:
             group = root["obsm"]
             for key in basis_keys:
@@ -136,7 +141,9 @@ class AbstractBackedDataset(AbstractDataset):
         if X is None and obs is None and len(obsm.keys()) == 0:
             if dataset_info is None:
                 dataset_info = self.get_dataset_info(filesystem, path)
-            obs = pd.DataFrame(index=pd.RangeIndex(dataset_info["shape"][0]).astype(str))
+            obs = pd.DataFrame(
+                index=pd.RangeIndex(dataset_info["shape"][0]).astype(str)
+            )
         adata = AnnData(X=X, obs=obs, var=var, obsm=obsm)
         if adata_modules is not None:
             adata.uns[ADATA_MODULE_UNS_KEY] = adata_modules

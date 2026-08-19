@@ -1,5 +1,5 @@
-import numpy as np
 import anndata
+import numpy as np
 
 
 def unique_timepoint(*populations):
@@ -17,7 +17,9 @@ def unique_timepoint(*populations):
     """
     times = set([pop.time for pop in populations])
     if len(times) > 1:
-        raise ValueError("Several populations were given, but they are not from the same day")
+        raise ValueError(
+            "Several populations were given, but they are not from the same day"
+        )
     if len(times) < 1:
         raise ValueError("No cells found at the given day")
     return list(times)[0]
@@ -53,7 +55,9 @@ def chain_transport_maps(tmap_model, pairs_list):
     for a, b in pairs_list:
         if a >= b:
             raise ValueError(
-                "({}, {}) is not a valid transport map : it goes backwards in time".format(a, b)
+                "({}, {}) is not a valid transport map : it goes backwards in time".format(
+                    a, b
+                )
             )
 
     tmap_0 = tmap_model.get_coupling(*pairs_list.pop(0))
@@ -86,8 +90,9 @@ def glue_transport_maps(tmap_0, tmap_1):
 
 
 def find_path(t0, t1, available_pairs, timepoints):
-    """Finds a path from t0 to t1 using the available day_pairs. Uses the finest resolution
-    possible.
+    """Finds a path from t0 to t1 using the available day_pairs.
+
+    Uses the finest resolution possible.
 
     Parameters
     ----------
@@ -120,7 +125,9 @@ def find_path(t0, t1, available_pairs, timepoints):
     0 -> 2 -> 1 -> 3 is not an acceptable path, because 2 -> 1 goes backwards in time.
     """
     if t0 not in timepoints or t1 not in timepoints:
-        raise ValueError("Unable to build path : t0 and t1 must be present in timepoints list")
+        raise ValueError(
+            "Unable to build path : t0 and t1 must be present in timepoints list"
+        )
 
     if available_pairs is None:
         t0_i = timepoints.index(t0)
@@ -143,7 +150,9 @@ def find_path(t0, t1, available_pairs, timepoints):
                 dist_prev[u] = (d + 1, t)
 
     if dist_prev[t1][0] == 0:
-        raise ValueError("{} is not reachable from {} with the chosen day_pairs".format(t1, t0))
+        raise ValueError(
+            "{} is not reachable from {} with the chosen day_pairs".format(t1, t0)
+        )
 
     path = []
     cur = t1

@@ -1,10 +1,10 @@
-import sys
+import argparse
 import math
 import os.path
-import argparse
+import sys
 
-import numpy as np
 import anndata
+import numpy as np
 
 import cirrocumulus.io_util
 from cirrocumulus.anndata_dataset import read_adata
@@ -31,7 +31,9 @@ def concat_spatial(paths: list[str], output_path: str, ncols: int = 2):
             counter = counter + 1
         unique_dataset_names.add(dataset_name)
         spatial_dir = os.path.join(os.path.dirname(path), "spatial")
-        if os.path.exists(spatial_dir) and cirrocumulus.io_util.add_spatial(adata, spatial_dir):
+        if os.path.exists(spatial_dir) and cirrocumulus.io_util.add_spatial(
+            adata, spatial_dir
+        ):
             spatial = adata.uns["images"]
             spot_diameters.append(spatial[0]["spot_diameter"])
             import imageio.v3 as iio
@@ -86,7 +88,8 @@ def concat_spatial(paths: list[str], output_path: str, ncols: int = 2):
                     common_obsm[key] = np.concatenate(coords_list)
     if do_concat_spatial:
         combined_image = np.zeros(
-            (max_height * nrows, max_width * ncols, images[0].shape[2]), dtype=images[0].dtype
+            (max_height * nrows, max_width * ncols, images[0].shape[2]),
+            dtype=images[0].dtype,
         )
         combined_image[:] = images[0].max()
         adata_spatial_coords = []
@@ -101,7 +104,9 @@ def concat_spatial(paths: list[str], output_path: str, ncols: int = 2):
             img = images[i]
             x_start = row_index * max_height
             y_start = col_index * max_width
-            combined_image[x_start : x_start + img.shape[0], y_start : y_start + img.shape[1]] = img
+            combined_image[
+                x_start : x_start + img.shape[0], y_start : y_start + img.shape[1]
+            ] = img
 
     combined_adata = anndata.concat(datasets, join="outer")
     combined_adata.obs_names_make_unique()

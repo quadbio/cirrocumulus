@@ -1,10 +1,10 @@
 import re
 
+import anndata
+import fsspec
 import h5py
 import numpy as np
-import fsspec
 import pandas as pd
-import anndata
 
 from cirrocumulus.ot.population import Population
 from cirrocumulus.ot.util import chain_transport_maps, find_path, unique_timepoint
@@ -21,7 +21,9 @@ class TransportMapModel:
         self.timepoints = timepoints
 
         if day_pairs is None:
-            day_pairs = [(timepoints[i], timepoints[i + 1]) for i in range(len(timepoints) - 1)]
+            day_pairs = [
+                (timepoints[i], timepoints[i + 1]) for i in range(len(timepoints) - 1)
+            ]
         self.day_pairs = day_pairs
 
     def trajectories(self, populations):
@@ -49,7 +51,9 @@ class TransportMapModel:
 
         def update(head, populations_to_update):
             idx = 0 if head else len(trajectories)
-            trajectories.insert(idx, np.array([pop.p for pop in populations_to_update]).T)
+            trajectories.insert(
+                idx, np.array([pop.p for pop in populations_to_update]).T
+            )
 
         update(True, populations)
         while self.can_pull_back(*populations):
@@ -133,7 +137,10 @@ class TransportMapModel:
         ValueError
             If all populations are not in the same timepoint
         """
-        return self.timepoints.index(unique_timepoint(*populations)) < len(self.timepoints) - 1
+        return (
+            self.timepoints.index(unique_timepoint(*populations))
+            < len(self.timepoints) - 1
+        )
 
     def can_pull_back(self, *populations):
         """Checks if the populations can be pulled back.
@@ -184,13 +191,13 @@ class TransportMapModel:
 
         Examples
         --------
-        >>> self.push_forward(pop, to_time = 2) # -> wot.Population
+        >>> self.push_forward(pop, to_time=2)  # -> wot.Population
         Pushing several populations at once
-        >>> self.push_forward(pop1, pop2, pop3) # -> list of wot.Population
+        >>> self.push_forward(pop1, pop2, pop3)  # -> list of wot.Population
         Pulling back after pushing forward
         >>> self.pull_back(self.push_forward(pop))
         Same, but several populations at once
-        >>> self.pull_back(* self.push_forward(pop1, pop2, pop3))
+        >>> self.pull_back(*self.push_forward(pop1, pop2, pop3))
         """
         i = self.timepoints.index(unique_timepoint(*populations))
         j = i + 1 if to_time is None else self.timepoints.index(to_time)
@@ -202,7 +209,9 @@ class TransportMapModel:
         if j >= len(self.timepoints):
             raise ValueError("No further timepoints. Unable to push forward")
         if i > j:
-            raise ValueError("Destination timepoint is before source. Unable to push forward")
+            raise ValueError(
+                "Destination timepoint is before source. Unable to push forward"
+            )
 
         p = np.vstack([pop.p for pop in populations])
         while i < j:
@@ -249,13 +258,13 @@ class TransportMapModel:
 
         Examples
         --------
-        >>> self.pull_back(pop, to_time = 0) # -> wot.Population
+        >>> self.pull_back(pop, to_time=0)  # -> wot.Population
         Pushing several populations at once
-        >>> self.pull_back(pop1, pop2, pop3) # -> list of wot.Population
+        >>> self.pull_back(pop1, pop2, pop3)  # -> list of wot.Population
         Pulling back after pushing forward
         >>> self.pull_back(self.push_forward(pop))
         Same, but several populations at once
-        >>> self.pull_back(* self.push_forward(pop1, pop2, pop3))
+        >>> self.pull_back(*self.push_forward(pop1, pop2, pop3))
         """
         i = self.timepoints.index(unique_timepoint(*populations))
         j = i - 1 if to_time is None else self.timepoints.index(to_time)
@@ -267,7 +276,9 @@ class TransportMapModel:
         if j == -1:
             raise ValueError("Destination timepoint not found")
         if i < j:
-            raise ValueError("Destination timepoint is after source. Unable to pull back")
+            raise ValueError(
+                "Destination timepoint is after source. Unable to pull back"
+            )
 
         p = np.vstack([pop.p for pop in populations])
         while i > j:
@@ -306,14 +317,16 @@ class TransportMapModel:
 
         Examples
         --------
-        >>> cell_set = [ 'cell_1', 'cell_2', 'cell_3' ]
-        >>> self.population_from_ids(cell_set) # -> wot.Population
+        >>> cell_set = ["cell_1", "cell_2", "cell_3"]
+        >>> self.population_from_ids(cell_set)  # -> wot.Population
         Multiple populations at once
         >>> multi_cell_sets = {
         >>>   'set_a': [ 'cell_a1', 'cell_a2'],
         >>>   'set_b': [ 'cell_b1', 'cell_b2'],
         >>> }
-        >>> self.population_from_ids(* multi_cell_sets.values()) # -> list of wot.Population
+        >>> self.population_from_ids(
+        ...     *multi_cell_sets.values()
+        ... )  # -> list of wot.Population
 
         Notes
         -----
@@ -410,13 +423,23 @@ def read_transport_map_dir(transport_map_url, with_covariates=False, cache=False
                             obs_key = obs.attrs.get("_index", "index")
                             var_key = var.attrs.get("_index", "index")
                             rids = obs[obs_key][()].astype(str)
-                            cids = var[var_key][()].astype(str) if i == len(tmap_keys) - 1 else None
+                            cids = (
+                                var[var_key][()].astype(str)
+                                if i == len(tmap_keys) - 1
+                                else None
+                            )
                         rdf = pd.DataFrame(index=rids, data={"day": t0})
                         cdf = (
-                            pd.DataFrame(index=cids, data={"day": t1}) if cids is not None else None
+                            pd.DataFrame(index=cids, data={"day": t1})
+                            if cids is not None
+                            else None
                         )
                         if meta is None:
-                            meta = rdf if cdf is None else pd.concat((rdf, cdf), copy=False)
+                            meta = (
+                                rdf
+                                if cdf is None
+                                else pd.concat((rdf, cdf), copy=False)
+                            )
                         else:
                             meta = (
                                 pd.concat((meta, rdf), copy=False)

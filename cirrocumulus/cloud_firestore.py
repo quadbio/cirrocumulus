@@ -1,6 +1,6 @@
-import os
-import json
 import datetime
+import json
+import os
 
 from google.cloud import datastore
 
@@ -9,7 +9,6 @@ from cirrocumulus.envir import CIRRO_EMAIL, CIRRO_JOB_RESULTS, SERVER_CAPABILITY
 from cirrocumulus.invalid_usage import InvalidUsage
 from cirrocumulus.job_api import save_job_result_to_file
 from cirrocumulus.util import get_email_domain
-
 
 DATASET = "Dataset"
 CAT_NAME = "Cat_Name"
@@ -40,7 +39,9 @@ class CloudFireStore(AbstractDB):
     def __init__(self):
         super().__init__()
         self.datastore_client = datastore.Client()
-        os.environ[CIRRO_EMAIL] = self.datastore_client.project + "@appspot.gserviceaccount.com"
+        os.environ[CIRRO_EMAIL] = (
+            self.datastore_client.project + "@appspot.gserviceaccount.com"
+        )
 
     def capabilities(self):
         c = super().capabilities()
@@ -207,7 +208,9 @@ class CloudFireStore(AbstractDB):
         if dataset_id is not None:  # only owner can update
             key, dataset_entity = self.__get_key_and_dataset(email, dataset_id, True)
         else:  # new dataset
-            dataset_entity = datastore.Entity(client.key(DATASET), exclude_from_indexes=["url"])
+            dataset_entity = datastore.Entity(
+                client.key(DATASET), exclude_from_indexes=["url"]
+            )
             user = client.get(client.key(USER, email))
             if "importer" not in user or not user["importer"]:
                 raise InvalidUsage("Not authorized", 403)

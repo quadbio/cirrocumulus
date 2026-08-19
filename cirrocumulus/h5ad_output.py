@@ -7,7 +7,6 @@ from cirrocumulus.anndata_util import (
 )
 from cirrocumulus.util import dumps
 
-
 logger = logging.getLogger("cirro")
 
 

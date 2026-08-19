@@ -189,7 +189,9 @@ def precomputed_grouped_stats(dataset_api, dataset, var_measures, dimensions):
     return []
 
 
-def precomputed_embedding(dataset_api, dataset, basis, obs_measures, var_measures, dimensions):
+def precomputed_embedding(
+    dataset_api, dataset, basis, obs_measures, var_measures, dimensions
+):
     if (len(obs_measures) + len(var_measures) + len(dimensions)) == 0:
         obs_measures = ["__count"]
     return dataset_api.read_precomputed_basis(
@@ -241,7 +243,9 @@ def handle_export_dataset_filters(dataset_api, dataset, data_filters):
         filter_names.append(data_filter_obj["name"])
         reformatted_filters.append(filter_value)
 
-    df = get_adata(dataset_api, dataset, measures=["obs/index"], data_filters=reformatted_filters)
+    df = get_adata(
+        dataset_api, dataset, measures=["obs/index"], data_filters=reformatted_filters
+    )
     result_df = pd.DataFrame(index=df["index"])
     for i in range(len(reformatted_filters)):
         data_filter = reformatted_filters[i]
@@ -277,8 +281,8 @@ def handle_data(
 
     if selection is not None:
         data_filter = selection.get("filter")
-        var_keys_filter, obs_keys_filter, selected_points_filter_basis_list = data_filter_keys(
-            data_filter
+        var_keys_filter, obs_keys_filter, selected_points_filter_basis_list = (
+            data_filter_keys(data_filter)
         )
         selection["basis"] = selected_points_filter_basis_list
         measures.update(var_keys_filter)
@@ -346,7 +350,9 @@ def handle_data(
                     results["layers"] = {}
                 results["layers"][layer_name] = {}
                 adata_layer = adata.uns[ADATA_LAYERS_UNS_KEY][layer_name]
-                array_to_json(adata_layer.X, adata_layer.var.index, results["layers"][layer_name])
+                array_to_json(
+                    adata_layer.X, adata_layer.var.index, results["layers"][layer_name]
+                )
 
     if embedding_list is not None and len(embedding_list) > 0:
         results["embeddings"] = []
@@ -382,9 +388,9 @@ def handle_data(
         if len(selection_embeddings) > 0:
             results["selection"]["coordinates"] = {}
             for embedding in selection_embeddings:
-                results["selection"]["coordinates"][embedding["name"]] = UniqueAggregator(
-                    "index"
-                ).execute(df)
+                results["selection"]["coordinates"][embedding["name"]] = (
+                    UniqueAggregator("index").execute(df)
+                )
         var_measures = type2measures["X"]
         results["selection"]["summary"] = FeatureAggregator(
             type2measures["obs"], type2measures["X"], dimensions
@@ -399,7 +405,9 @@ def handle_data(
 
 
 def handle_selection_ids(dataset_api, dataset, data_filter):
-    df = get_selected_data(dataset_api, dataset, measures=["obs/index"], data_filter=data_filter)
+    df = get_selected_data(
+        dataset_api, dataset, measures=["obs/index"], data_filter=data_filter
+    )
     return {"ids": IdsAggregator().execute(df)}
 
 
@@ -418,8 +426,8 @@ def get_adata(
     selected_points_filter_basis_list = []
 
     for data_filter in data_filters:
-        _var_keys_filter, _obs_keys_filter, selected_points_filter_basis_list = data_filter_keys(
-            data_filter, dataset_info
+        _var_keys_filter, _obs_keys_filter, selected_points_filter_basis_list = (
+            data_filter_keys(data_filter, dataset_info)
         )
 
         selected_points_filter_basis_list += selected_points_filter_basis_list

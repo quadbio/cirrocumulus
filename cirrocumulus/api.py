@@ -1,9 +1,9 @@
-import os
 import json
+import os
 from urllib.parse import urlparse
 
-import pandas as pd
 import anndata
+import pandas as pd
 from flask import Blueprint, Response, request, stream_with_context
 
 import cirrocumulus.data_processing as data_processing
@@ -31,7 +31,6 @@ from .envir import (
 from .invalid_usage import InvalidUsage
 from .job_api import delete_job, submit_job
 from .util import get_fs, get_scheme, json_response, open_file
-
 
 cirro_blueprint = Blueprint("cirro", __name__)
 
@@ -68,7 +67,9 @@ def copy_url(url):
     if url.endswith("/") or os.path.isdir(url):  # don't copy directories
         return url
 
-    if urlparse(upload).netloc == urlparse(url).netloc:  # don't copy if already in the same bucket
+    if (
+        urlparse(upload).netloc == urlparse(url).netloc
+    ):  # don't copy if already in the same bucket
         return url
     src_scheme = get_scheme(url)
     src_fs = get_fs(src_scheme)
@@ -121,7 +122,9 @@ def send_file(file_path, as_attachment=False):
     r = Response(stream_with_context(generate()), mimetype=mimetype)
     r.headers["Content-Encoding"] = encoding
     if as_attachment:
-        r.headers["Content-Disposition"] = f'attachment; filename="{os.path.basename(file_path)}"'
+        r.headers["Content-Disposition"] = (
+            f'attachment; filename="{os.path.basename(file_path)}"'
+        )
     return r
 
 
@@ -164,7 +167,12 @@ def handle_server():
     d["upload"] = os.environ.get(CIRRO_UPLOAD) is not None
     d["species"] = load_json(CIRRO_SPECIES) or dict(
         favorite=["Homo sapiens", "Mus musculus"],
-        other=["Gallus gallus", "Macaca fascicularis", "Macaca mulatta", "Rattus norvegicus"],
+        other=[
+            "Gallus gallus",
+            "Macaca fascicularis",
+            "Macaca mulatta",
+            "Rattus norvegicus",
+        ],
     )
 
     # from https://www.ebi.ac.uk/ols/ontologies/efo/terms?iri=http%3A%2F%2Fwww.ebi.ac.uk%2Fefo%2FEFO_0010183&viewMode=All&siblings=false
@@ -217,7 +225,9 @@ def handle_server():
     ]
 
     if os.environ.get(CIRRO_CELL_ONTOLOGY) is not None:
-        if get_fs(os.environ[CIRRO_CELL_ONTOLOGY]).exists(os.environ[CIRRO_CELL_ONTOLOGY]):
+        if get_fs(os.environ[CIRRO_CELL_ONTOLOGY]).exists(
+            os.environ[CIRRO_CELL_ONTOLOGY]
+        ):
 
             def parse_term(f):
                 term = dict()
@@ -354,7 +364,9 @@ def handle_dataset_view():
         if request.method == "POST" and dataset_id is None:
             return "Please supply a ds_id", 400
 
-        result = database_api.upsert_dataset_view(email=email, dataset_id=dataset_id, view=d)
+        result = database_api.upsert_dataset_view(
+            email=email, dataset_id=dataset_id, view=d
+        )
         return json_response(result)
     elif request.method == "DELETE":
         database_api.delete_dataset_view(email, view_id=d.pop("id"))
@@ -370,7 +382,9 @@ def handle_schema():
     dataset = database_api.get_dataset(email, dataset_id)
     dataset["url"] = map_url(dataset["url"])
     schema = dataset  # dataset has title, etc. from database
-    schema["markers"] = database_api.get_feature_sets(email=email, dataset_id=dataset_id)
+    schema["markers"] = database_api.get_feature_sets(
+        email=email, dataset_id=dataset_id
+    )
     schema.update(dataset_api.get_schema(dataset))
     return json_response(schema)
 
@@ -508,7 +522,9 @@ def handle_dataset():
         #         output=out
         #     )
         #     prepare_data.execute()
-        dataset_id = database_api.upsert_dataset(email=email, readers=readers, dataset=d)
+        dataset_id = database_api.upsert_dataset(
+            email=email, readers=readers, dataset=d
+        )
         return json_response({"id": dataset_id})
     elif request.method == "DELETE":
         content = request.get_json(force=True, cache=False)

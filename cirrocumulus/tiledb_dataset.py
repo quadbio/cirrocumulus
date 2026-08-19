@@ -1,9 +1,9 @@
-import os
 import json
+import os
 
 import pandas as pd
-import tiledb
 import scipy.sparse
+import tiledb
 from anndata import AnnData
 
 from cirrocumulus.abstract_dataset import AbstractDataset
@@ -24,7 +24,9 @@ class TileDBDataset(AbstractDataset):
         for ax in ["obs"]:
             with tiledb.open(os.path.join(path, ax), mode="r") as array:
                 schema_hints = (
-                    json.loads(array.meta["cxg_schema"]) if "cxg_schema" in array.meta else {}
+                    json.loads(array.meta["cxg_schema"])
+                    if "cxg_schema" in array.meta
+                    else {}
                 )
                 if type(schema_hints) is not dict:
                     raise TypeError("Array schema was malformed.")
@@ -35,7 +37,10 @@ class TileDBDataset(AbstractDataset):
                     # type hints take precedence
                     if "type" in type_hint:
                         schema["type"] = type_hint["type"]
-                        if schema["type"] == "categorical" and "categories" in type_hint:
+                        if (
+                            schema["type"] == "categorical"
+                            and "categories" in type_hint
+                        ):
                             schema["categories"] = type_hint["categories"]
                     # else:
                     #     schema.update(get_schema_type_hint_from_dtype(attr.dtype))
@@ -69,7 +74,8 @@ class TileDBDataset(AbstractDataset):
         #     colors = json.loads(gmd.meta["cxg_category_colors"]) if "cxg_category_colors" in gmd.meta else dict()
         embeddings_path_type = []
         tiledb.ls(
-            os.path.join(path, "emb"), lambda path, type: embeddings_path_type.append((path, type))
+            os.path.join(path, "emb"),
+            lambda path, type: embeddings_path_type.append((path, type)),
         )
         embeddings = []
         schema_dict["embeddings"] = embeddings

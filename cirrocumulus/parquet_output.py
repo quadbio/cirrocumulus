@@ -1,18 +1,19 @@
-import os
 import logging
+import os
 
 import numpy as np
 import pyarrow as pa
-import scipy.sparse
 import pyarrow.parquet as pq
+import scipy.sparse
 
 from cirrocumulus.util import dumps
-
 
 logger = logging.getLogger("cirro")
 
 
-def write_pq(d, output_dir, name, filesystem, write_statistics=True, row_group_size=None):
+def write_pq(
+    d, output_dir, name, filesystem, write_statistics=True, row_group_size=None
+):
     filesystem.makedirs(output_dir, exist_ok=True)
     pq.write_table(
         pa.Table.from_pydict(d),
@@ -40,11 +41,15 @@ def save_dataset_pq(dataset, schema, output_directory, filesystem, whitelist):
             for layer in dataset.layers.keys():
                 layer_dir = os.path.join(output_directory, "layers", layer)
                 filesystem.makedirs(layer_dir, exist_ok=True)
-                save_adata_X(dataset, layer_dir, filesystem, layer, whitelist=whitelist["x_keys"])
+                save_adata_X(
+                    dataset, layer_dir, filesystem, layer, whitelist=whitelist["x_keys"]
+                )
         if whitelist["obs"]:
             save_data_obs(dataset, obs_dir, filesystem, whitelist=whitelist["obs_keys"])
         if whitelist["obsm"]:
-            save_data_obsm(dataset, obsm_dir, filesystem, whitelist=whitelist["obsm_keys"])
+            save_data_obsm(
+                dataset, obsm_dir, filesystem, whitelist=whitelist["obsm_keys"]
+            )
 
 
 def save_adata_X(adata, X_dir, filesystem, layer=None, whitelist=None):
@@ -62,7 +67,9 @@ def save_adata_X(adata, X_dir, filesystem, layer=None, whitelist=None):
             if is_sparse:
                 indices = np.where(X != 0)[0]
                 values = X[indices]
-                write_pq(dict(index=indices, value=values), output_dir, filename, filesystem)
+                write_pq(
+                    dict(index=indices, value=values), output_dir, filename, filesystem
+                )
             else:
                 write_pq(dict(value=X), output_dir, filename, filesystem)
             if j > 0 and (j + 1) % 1000 == 0:

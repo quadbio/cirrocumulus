@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 
 from cirrocumulus.envir import (
     CIRRO_AUTH,
@@ -19,7 +19,6 @@ from cirrocumulus.envir import (
 )
 from cirrocumulus.launch import create_app
 from cirrocumulus.util import add_dataset_providers, create_instance, get_fs
-
 
 app = None
 
@@ -54,7 +53,9 @@ def configure_app(app):
             app.config[CIRRO_AUTH] = OktaAuth()
         else:
             raise ValueError(
-                "Unknown CIRRO_AUTH_PROVIDER - {}".format(os.environ[CIRRO_AUTH_PROVIDER])
+                "Unknown CIRRO_AUTH_PROVIDER - {}".format(
+                    os.environ[CIRRO_AUTH_PROVIDER]
+                )
             )
     if os.environ.get(CIRRO_DATABASE_CLASS) is None:
         os.environ[CIRRO_DATABASE_CLASS] = "cirrocumulus.mongo_db.MongoDb"
@@ -73,10 +74,18 @@ def configure_app(app):
 
 
 def create_parser(description=False):
-    parser = argparse.ArgumentParser(description="Run cirrocumulus server" if description else None)
-    parser.add_argument("--db_uri", help="Database connection URI", default=DEFAULT_DB_URI)
+    parser = argparse.ArgumentParser(
+        description="Run cirrocumulus server" if description else None
+    )
     parser.add_argument(
-        "-w", "--workers", dest="workers", help="The number of worker processes", type=int
+        "--db_uri", help="Database connection URI", default=DEFAULT_DB_URI
+    )
+    parser.add_argument(
+        "-w",
+        "--workers",
+        dest="workers",
+        help="The number of worker processes",
+        type=int,
     )
     parser.add_argument(
         "-t",
@@ -93,13 +102,20 @@ def create_parser(description=False):
         help="Server socket to bind. Server sockets can be any of $(HOST), $(HOST):$(PORT), fd://$(FD), or unix:$(PATH). An IP is a valid $(HOST).",
         default="127.0.0.1:5000",
     )
-    parser.add_argument("--footer", help="Markdown file to customize the application footer")
-    parser.add_argument("--header", help="Markdown file to customize the application header")
+    parser.add_argument(
+        "--footer", help="Markdown file to customize the application footer"
+    )
+    parser.add_argument(
+        "--header", help="Markdown file to customize the application header"
+    )
     parser.add_argument("--upload", help="URL to allow users to upload files")
     parser.add_argument(
-        "--results", help="URL to save user computed results (e.g. differential expression) to"
+        "--results",
+        help="URL to save user computed results (e.g. differential expression) to",
     )
-    parser.add_argument("--ontology", help="Path to ontology in OBO format for annotation")
+    parser.add_argument(
+        "--ontology", help="Path to ontology in OBO format for annotation"
+    )
     return parser
 
 
@@ -125,7 +141,9 @@ def main(argsv):
         os.environ[CIRRO_UPLOAD] = args.upload
     if args.results is not None:
         os.environ[CIRRO_JOB_RESULTS] = args.results
-        get_fs(os.environ[CIRRO_JOB_RESULTS]).makedirs(os.environ[CIRRO_JOB_RESULTS], exist_ok=True)
+        get_fs(os.environ[CIRRO_JOB_RESULTS]).makedirs(
+            os.environ[CIRRO_JOB_RESULTS], exist_ok=True
+        )
 
     run_args = [
         "gunicorn",

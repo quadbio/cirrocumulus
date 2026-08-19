@@ -1,5 +1,5 @@
-import os
 import json
+import os
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -28,7 +28,9 @@ class AbstractDataset(ABC):
         d = dict()
         var = s["var"]
         d["var"] = (
-            pd.Index(map(lambda x: x["id"], var)) if isinstance(var[0], dict) else pd.Index(var)
+            pd.Index(map(lambda x: x["id"], var))
+            if isinstance(var[0], dict)
+            else pd.Index(var)
         )
         d["shape"] = s["shape"]
         return d

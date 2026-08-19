@@ -6,7 +6,7 @@ import scipy.stats
 
 
 def _power(X, power):
-    return X ** power if isinstance(X, np.ndarray) else X.power(power)
+    return X**power if isinstance(X, np.ndarray) else X.power(power)
 
 
 def asarray(x):
@@ -96,7 +96,11 @@ class DE:
             )
 
             # groups on rows, genes on columns
-            mean_df = pd.concat((mean_df, _mean_df), axis=1) if mean_df is not None else _mean_df
+            mean_df = (
+                pd.concat((mean_df, _mean_df), axis=1)
+                if mean_df is not None
+                else _mean_df
+            )
             variance_df = (
                 pd.concat((variance_df, _variance_df), axis=1)
                 if variance_df is not None
@@ -104,7 +108,9 @@ class DE:
             )
             if frac_expressed_ is not None:
                 _frac_expressed_df = pd.DataFrame(
-                    frac_expressed_, columns=adata_batch.var.index, index=indicator_df.columns
+                    frac_expressed_,
+                    columns=adata_batch.var.index,
+                    index=indicator_df.columns,
                 )
                 frac_expressed_df = (
                     pd.concat((frac_expressed_df, _frac_expressed_df), axis=1)
@@ -113,7 +119,9 @@ class DE:
                 )
 
         if base is not None:
-            expm1_func = lambda x: np.expm1(x * np.log(base))
+
+            def expm1_func(x):
+                return np.expm1(x * np.log(base))
         else:
             expm1_func = np.expm1
         pair2results = dict()

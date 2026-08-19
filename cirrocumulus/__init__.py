@@ -1,8 +1,7 @@
-import os
 import logging
+import os
 
 from cirrocumulus.envir import CIRRO_LOG_LEVEL
-
 
 logger = logging.getLogger("cirro")
 log_level = os.environ.get(CIRRO_LOG_LEVEL, "ERROR")

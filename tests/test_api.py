@@ -1,7 +1,7 @@
 import os
 
-import pytest
 import anndata
+import pytest
 
 from cirrocumulus.envir import CIRRO_DB_URI, CIRRO_TEST
 from cirrocumulus.launch import configure_app, create_app

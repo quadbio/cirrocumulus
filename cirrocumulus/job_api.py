@@ -1,6 +1,6 @@
-import os
-import math
 import logging
+import math
+import os
 
 import pandas as pd
 
@@ -18,7 +18,6 @@ from .envir import (
 )
 from .fdr import fdrcorrection
 from .util import add_dataset_providers, create_instance, get_fs, import_path, open_file
-
 
 executor = None
 job_id_2_future = dict()
@@ -46,7 +45,9 @@ def save_job_result_to_file(result, job_id):
         import pyarrow.parquet as pq
 
         url = os.path.join(os.environ[CIRRO_JOB_RESULTS], str(job_id) + ".parquet")
-        pq.write_table(pa.Table.from_pandas(result["data"]), url, filesystem=get_fs(url))
+        pq.write_table(
+            pa.Table.from_pandas(result["data"]), url, filesystem=get_fs(url)
+        )
     else:
         raise ValueError("Unknown content-type {}".format(new_result["content-type"]))
     new_result["url"] = url
@@ -82,13 +83,18 @@ def submit_job(database_api, dataset_api, email, dataset, job_name, job_type, pa
 
             executor = (
                 ProcessPoolExecutor(
-                    max_workers=max_workers, mp_context=multiprocessing.get_context("spawn")
+                    max_workers=max_workers,
+                    mp_context=multiprocessing.get_context("spawn"),
                 )
                 if is_serve
                 else ThreadPoolExecutor(max_workers=max_workers)
             )
     job_id = database_api.create_job(
-        email=email, dataset_id=dataset["id"], job_name=job_name, job_type=job_type, params=params
+        email=email,
+        dataset_id=dataset["id"],
+        job_name=job_name,
+        job_type=job_type,
+        params=params,
     )
     if executor is not None:
         future = executor.submit(
@@ -133,7 +139,10 @@ def get_obs(dataset_api, dataset, dataset_info, params):
         return obs, obs_field
     else:
         filters = [params["filter"], params["filter2"]]
-        filter_names = [get_filter_str(params["filter"]), get_filter_str(params["filter2"])]
+        filter_names = [
+            get_filter_str(params["filter"]),
+            get_filter_str(params["filter2"]),
+        ]
 
         for i in range(len(filter_names)):
             if filter_names[i] is None:
@@ -146,11 +155,15 @@ def get_obs(dataset_api, dataset, dataset_info, params):
         masks, _ = get_mask(dataset_api, dataset, dataset_info, filters)
         for i in range(2):
             obs.loc[masks[i], obs_field] = filter_names[i]
-        obs[obs_field] = obs[obs_field].astype(pd.Categorical(filter_names, ordered=True).dtype)
+        obs[obs_field] = obs[obs_field].astype(
+            pd.Categorical(filter_names, ordered=True).dtype
+        )
         return obs, obs_field
 
 
-def run_job(email, job_id, job_name, job_type, dataset, params, database_api, dataset_api):
+def run_job(
+    email, job_id, job_name, job_type, dataset, params, database_api, dataset_api
+):
     if database_api is None:
         database_api = create_instance(os.environ[CIRRO_DATABASE_CLASS])
     if dataset_api is None:
@@ -162,7 +175,9 @@ def run_job(email, job_id, job_name, job_type, dataset, params, database_api, da
     if f is None:
         database_api.update_job(email=email, job_id=job_id, status="error", result=None)
         raise ValueError("No function to handle {}".format(job_type))
-    import_path(f)(email, job_id, job_name, job_type, dataset, params, database_api, dataset_api)
+    import_path(f)(
+        email, job_id, job_name, job_type, dataset, params, database_api, dataset_api
+    )
 
 
 def run_ot_trajectory(
@@ -181,7 +196,10 @@ def run_ot_trajectory(
     day = selected_adata.obs[timepoint_field].unique()
     if len(day) > 1:
         database_api.update_job(
-            email=email, job_id=job_id, status="error", result="More than one timepoint selected"
+            email=email,
+            job_id=job_id,
+            status="error",
+            result="More than one timepoint selected",
         )
         raise ValueError("More than one timepoint selected")
     tmap_name = params["tmap"]
@@ -190,7 +208,9 @@ def run_ot_trajectory(
             break
 
     tmap_model = read_transport_map_dir(tmap_item["path"])
-    populations = tmap_model.population_from_ids(selected_adata.obs["index"].values, at_time=day[0])
+    populations = tmap_model.population_from_ids(
+        selected_adata.obs["index"].values, at_time=day[0]
+    )
     populations[0].name = job_name
 
     trajectory_dataset = tmap_model.trajectories(populations)
@@ -200,10 +220,14 @@ def run_ot_trajectory(
 
     result = dict(data=trajectory_dataset.to_df())
     result["content-type"] = "application/parquet"
-    database_api.update_job(email=email, job_id=job_id, status="complete", result=result)
+    database_api.update_job(
+        email=email, job_id=job_id, status="complete", result=result
+    )
 
 
-def run_de(email, job_id, job_name, job_type, dataset, params, database_api, dataset_api):
+def run_de(
+    email, job_id, job_name, job_type, dataset, params, database_api, dataset_api
+):
     dataset_info = dataset_api.get_dataset_info(dataset)
     var_names = dataset_info["var"]
     nfeatures = len(var_names)
@@ -216,9 +240,13 @@ def run_de(email, job_id, job_name, job_type, dataset, params, database_api, dat
         adata = dataset_api.read_dataset(keys=dict(X=[slice(i, end)]), dataset=dataset)
         if batch_size != nfeatures:
             frac = end / nfeatures
-            status = "running {:.0f}%".format(100 * frac) if frac < 1 else "saving results"
+            status = (
+                "running {:.0f}%".format(100 * frac) if frac < 1 else "saving results"
+            )
             logger.info(status)
-            database_api.update_job(email=email, job_id=job_id, status=status, result=None)
+            database_api.update_job(
+                email=email, job_id=job_id, status=status, result=None
+            )
         return adata
 
     compare_pairs = params.get("pairs") == "1"
@@ -238,7 +266,9 @@ def run_de(email, job_id, job_name, job_type, dataset, params, database_api, dat
     comparison_names = []
     for comparison in de_results.pair2results.keys():
         result = de_results.pair2results[comparison]
-        comparison_name = comparison if isinstance(comparison, str) else "_".join(comparison)
+        comparison_name = (
+            comparison if isinstance(comparison, str) else "_".join(comparison)
+        )
         comparison_names.append(comparison_name)
 
         pvals = fdrcorrection(result["pvals"])
@@ -253,8 +283,11 @@ def run_de(email, job_id, job_name, job_type, dataset, params, database_api, dat
     # client expects field {comparison_name}:pvals_adj
     result = dict(
         groups=comparison_names,
-        fields=["pvals_adj", "scores", "lfc"] + (["pts_1", "pts_2"] if has_frac_expressed else []),
+        fields=["pvals_adj", "scores", "lfc"]
+        + (["pts_1", "pts_2"] if has_frac_expressed else []),
         data=result_df.to_dict(orient="records"),
     )
     result["content-type"] = "application/json"
-    database_api.update_job(email=email, job_id=job_id, status="complete", result=result)
+    database_api.update_job(
+        email=email, job_id=job_id, status="complete", result=result
+    )

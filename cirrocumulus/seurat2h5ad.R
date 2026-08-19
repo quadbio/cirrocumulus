@@ -30,32 +30,11 @@ if (file.exists(h5ad_path)) {
 
 if (method == 'reticulate') {
   library(reticulate)
-  library(Matrix)
+#   library(Matrix)
   library(ps)
 
   anndata <- import("anndata")
-  assay <- DefaultAssay(object = rds)
-  exprs <- GetAssayData(object = rds, slot = "data", assay = assay)
-  col_data <- rds[[]]
-  for(name in names(col_data)) {
-    if(class(col_data[[name]])=='data.frame') {
-      col_data[[name]] <- NULL
-    }
-  }
-  col_data$ident <- Idents(object = rds)
-  row_data <- rds[[assay]][[]]
-  if (length(row_data) == 0) {
-    row_data['tmp'] = 'tmp'
-  }
-  adata <- anndata$AnnData(X = t(exprs), obs = col_data, var = row_data)
-  # dim_names = reducedDimNames(sce)
-  # for (dim_name in dim_names) {
-  #   adata$obsm$setdefault(dim_name, reducedDim(sce, dim_name))
-  # }
-  for (dr in Seurat:::FilterObjects(object = rds, classes.keep = "DimReduc")) {
-    adata$obsm$setdefault(dr, Embeddings(object = rds[[dr]]))
-  }
-  adata$write(h5ad_path)
+  Convert(from = rds, to = "anndata", filename = h5ad_path)
 
   # Fix hanging R process: There appear to be 1 leaked semaphore objects to clean up at shutdown.
   child_processes <- ps_children()

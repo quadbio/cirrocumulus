@@ -11,7 +11,9 @@ def create_df(test_data, measures, dimensions, basis):
     df = pd.DataFrame(test_data[:, measures].X.toarray(), columns=measures)
     df = df.join(test_data.obs[dimensions].reset_index())
     return df.join(
-        pd.DataFrame(test_data.obsm["X_umap"][:, 0:2], columns=basis["coordinate_columns"])
+        pd.DataFrame(
+            test_data.obsm["X_umap"][:, 0:2], columns=basis["coordinate_columns"]
+        )
     )
 
 
@@ -25,7 +27,10 @@ def group_df(test_data, measures, dimensions, continuous_obs, basis):
     for key in dimensions:
         agg_dict[key] = lambda x: x.mode()[0]
     EmbeddingAggregator.convert_coords_to_bin(
-        df, nbins=100, coordinate_columns=basis["coordinate_columns"], bin_name=basis["full_name"]
+        df,
+        nbins=100,
+        coordinate_columns=basis["coordinate_columns"],
+        bin_name=basis["full_name"],
     )
     # group by bin then agg
     return df.groupby(basis["full_name"]).agg(agg_dict)
@@ -48,7 +53,11 @@ def diff_binning(grouped_df, measures, dimensions, continuous_obs, basis, result
         )
     for key in continuous_obs:
         np.testing.assert_allclose(
-            results["values"][key], grouped_df[key].values, err_msg=key, rtol=1e-05, atol=1e-08
+            results["values"][key],
+            grouped_df[key].values,
+            err_msg=key,
+            rtol=1e-05,
+            atol=1e-08,
         )
     for key in dimensions:
         np.testing.assert_array_equal(
@@ -62,10 +71,14 @@ def test_no_binning(
     obsm_field = basis
     embedding_list = [dict(dimensions=2, name=basis)]
     values = dict(
-        dimensions=dimensions, measures=measures + list(map(lambda x: "obs/" + x, continuous_obs))
+        dimensions=dimensions,
+        measures=measures + list(map(lambda x: "obs/" + x, continuous_obs)),
     )
     results = handle_data(
-        dataset_api=dataset_api, dataset=input_dataset, values=values, embedding_list=embedding_list
+        dataset_api=dataset_api,
+        dataset=input_dataset,
+        values=values,
+        embedding_list=embedding_list,
     )
     for key in measures:
         v = results["values"][key]  # dict of indices, values
@@ -90,7 +103,9 @@ def test_no_binning(
     coords = results["embeddings"][0]["coordinates"]
     for i in range(obsm.shape[1]):
         np.testing.assert_array_equal(
-            coords["{}_{}".format(basis, i + 1)], obsm[:, i], err_msg="obsm {}".format(key)
+            coords["{}_{}".format(basis, i + 1)],
+            obsm[:, i],
+            err_msg="obsm {}".format(key),
         )
 
 

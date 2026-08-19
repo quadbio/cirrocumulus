@@ -1,30 +1,33 @@
-import os
-import json
 import concurrent.futures
+import json
+import os
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
-import scipy.sparse
 import pyarrow.parquet as pq
+import scipy.sparse
 from anndata import AnnData
 
 from cirrocumulus.abstract_dataset import AbstractDataset
 from cirrocumulus.anndata_util import ADATA_LAYERS_UNS_KEY
-
 
 max_workers = min(12, pa.cpu_count())
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
 
 
 def read_table(path, filesystem, columns=None):
-    return pq.read_table(path, filesystem=filesystem, columns=columns, use_threads=False)
+    return pq.read_table(
+        path, filesystem=filesystem, columns=columns, use_threads=False
+    )
 
 
 def read_tables(paths, filesystem, columns=None):
     futures = []
     for path in paths:
-        future = executor.submit(read_table, path, filesystem=filesystem, columns=columns)
+        future = executor.submit(
+            read_table, path, filesystem=filesystem, columns=columns
+        )
         futures.append(future)
     concurrent.futures.wait(futures)
     return futures
@@ -127,7 +130,9 @@ class ParquetDataset(AbstractDataset):
                 vals = np.array(vals).T
                 obsm[basis_keys[i]] = vals
         if X is None and obs is None and len(obsm.keys()) == 0:
-            obs = pd.DataFrame(index=pd.RangeIndex(dataset_info["shape"][0]).astype(str))
+            obs = pd.DataFrame(
+                index=pd.RangeIndex(dataset_info["shape"][0]).astype(str)
+            )
         adata = AnnData(X=X, obs=obs, var=var, obsm=obsm)
         adata.uns[ADATA_LAYERS_UNS_KEY] = layers
         return adata

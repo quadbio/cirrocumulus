@@ -1,6 +1,6 @@
-import os
-import json
 import datetime
+import json
+import os
 
 from cirrocumulus.abstract_db import AbstractDB
 from cirrocumulus.envir import (
@@ -76,7 +76,7 @@ class LocalDbAPI(AbstractDB):
                 with open(json_path, "rt") as f:
                     try:
                         json_data.update(json.load(f))
-                    except:
+                    except:  # noqa:E722
                         print("Unable to load {}".format(json_path))
             meta = create_dataset_meta(path)
 
@@ -86,7 +86,9 @@ class LocalDbAPI(AbstractDB):
                 json_data["views"] = {}
             if "categories" not in json_data:
                 json_data["categories"] = {}
-            self.dataset_to_info[path] = dict(json_data=json_data, meta=meta, json_path=json_path)
+            self.dataset_to_info[path] = dict(
+                json_data=json_data, meta=meta, json_path=json_path
+            )
 
     def capabilities(self):
         c = super().capabilities()
@@ -259,7 +261,9 @@ class LocalDbAPI(AbstractDB):
 
     def delete_dataset_view(self, email, view_id):
         dataset_id = self.__find_dataset_id(view_id, "views")
-        return self.__delete_entity(dataset_id=dataset_id, entity_id=view_id, kind="views")
+        return self.__delete_entity(
+            dataset_id=dataset_id, entity_id=view_id, kind="views"
+        )
 
     def get_dataset_view(self, email, view_id):
         dataset_id = self.__find_dataset_id(view_id, "views")
@@ -336,7 +340,9 @@ class LocalDbAPI(AbstractDB):
                     save_job_result_to_file(result, job_id)
                     job["result"] = result
                 else:
-                    url = os.path.join(os.environ[CIRRO_JOB_RESULTS], str(job_id) + ".json.gz")
+                    url = os.path.join(
+                        os.environ[CIRRO_JOB_RESULTS], str(job_id) + ".json.gz"
+                    )
                     # store pointer to file in JSON
                     job["content-type"] = result["content-type"]
                     job["url"] = save_job_result_to_file(result, job_id)["url"]

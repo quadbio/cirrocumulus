@@ -66,4 +66,6 @@ class DatasetAPI:
     def get_result(self, dataset, result_id):
         path = dataset["url"]
         provider = self.get_dataset_provider(path)
-        return provider.get_result(get_fs(path), path, dataset=dataset, result_id=result_id)
+        return provider.get_result(
+            get_fs(path), path, dataset=dataset, result_id=result_id
+        )

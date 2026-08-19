@@ -1,11 +1,8 @@
-const puppeteer = require('puppeteer');
 const util = require('../util');
 
 async function featureScreenshot(options) {
-  const browser = await puppeteer.launch({headless: true});
-  const page = await browser.newPage();
   await page.setViewport({width: 1500, height: 1000});
-  await page.goto('http://127.0.0.1:5000/');
+  await page.goto('http://127.0.0.1:5001/');
   await page.waitForSelector('[data-testid="' + options.input + '"]');
 
   await page.click('[data-testid="genes-input"]');
@@ -41,11 +38,16 @@ it('embeddings"', async () => {
   await page.evaluate(() => {
     document.querySelector('[data-testid="chart-extra"]').style.display = '';
   });
+  await page.waitForSelector('[data-testid="continuous-legend"]');
+  await page.evaluate(() => {
+    document
+      .querySelector('[data-testid="continuous-legend"] input[type=text]')
+      .focus();
+  });
 
-  await page.focus('[data-testid="continuous-legend"] input[type=text]');
   await page.keyboard.type('0');
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(500);
+
   await page.evaluate(() => {
     document.querySelector('[data-testid="chart-extra"]').style.display =
       'none';
@@ -55,18 +57,17 @@ it('embeddings"', async () => {
   await page.click('[data-testid="distributions-tab"]');
   await page.screenshot({path: 'distributions.png'});
 
-  await browser.close();
-  await util.diffImages('CST3.png', 'screenshots/CST3.png', 0);
-  await util.diffImages(
+  util.diffImages('CST3.png', 'tests/screenshots/CST3.png', 0);
+  util.diffImages(
     'distributions.png',
-    'screenshots/distributions.png',
+    'tests/screenshots/distributions.png',
     0,
   );
   // categories are drawn in random order
-  await util.diffImages('louvain.png', 'screenshots/louvain.png', 0.001);
-  await util.diffImages(
+  util.diffImages('louvain.png', 'tests/screenshots/louvain.png', 0.001);
+  util.diffImages(
     'CST3_filtered.png',
-    'screenshots/CST3_filtered.png',
+    'tests/screenshots/CST3_filtered.png',
     0.001,
   );
 }, 20000);
