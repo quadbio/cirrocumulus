@@ -48,7 +48,7 @@
     "redux-thunk": "^2.4.1",
     "simplify-js": "^1.2.4",
     "three": "^0.151.0",
-    "typescript": "^5.0.2",
+    "typescript": "^3.3.1",
     "web-vitals": "^3.0.1"
   },
   "scripts": {
@@ -82,12 +82,12 @@
     ]
   },
   "devDependencies": {
-    "gm": "^1.25.0",
-    "jest": "^29.6.2",
-    "jest-puppeteer": "^9.0.0",
+    "cross-spawn": "^7.0.6",
+    "jest": "^29.7.0",
+    "jest-puppeteer": "^10.0.1",
     "prettier": "^3.0.0",
     "preval.macro": "^5.0.0",
-    "puppeteer": "^21.1.0"
+    "puppeteer": "^25.8.0"
   },
   "prettier": {
     "bracketSpacing": false,
