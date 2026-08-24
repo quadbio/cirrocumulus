@@ -47,9 +47,9 @@ That list is the recipe. Drop a branch from it once upstream merges its PR, then
 | `fork/tooling` | — | this file and `scripts/fetch_client.py`. Never upstreamable |
 | `fix/x-stats-sparse-dense` | [#230](https://github.com/lilab-bcb/cirrocumulus/pull/230) | `X_stats` returned 2-D columns for sparse `X`, 500ing the composition view, and did not handle dense `X` at all |
 | `fix/dotplot-aggregator-anndata` | [#231](https://github.com/lilab-bcb/cirrocumulus/pull/231) | `DotPlotAggregator` was written for a DataFrame but is passed an AnnData, 500ing the dot plot view; multi-dimension grouping was broken too |
-| `fix/anndata-013-none-layer` | new | anndata >= 0.13 exposes `None` in `layers` as an alias for `X`, so six call sites treated it as a layer. Broke the parquet and zarr writers |
+| `fix/anndata-013-none-layer` | [#236](https://github.com/lilab-bcb/cirrocumulus/pull/236) | anndata >= 0.13 exposes `None` in `layers` as an alias for `X`, so six call sites treated it as a layer. Broke the parquet and zarr writers |
 | `fix/zarr-categorical-obs` | [#233](https://github.com/lilab-bcb/cirrocumulus/pull/233) | elements anndata writes as *groups* rather than arrays — categoricals, nullable strings — could not be read at all |
-| `fix/zarr3` | new | zarr 3 support: unpins `zarr<3`, and replaces the vendored 2021-era anndata zarr writer with `anndata.io.write_elem`. Upstream [#235](https://github.com/lilab-bcb/cirrocumulus/pull/235) removes the pin without any of this |
+| `fix/zarr3` | [#237](https://github.com/lilab-bcb/cirrocumulus/pull/237) | zarr 3 support: unpins `zarr<3`, and replaces the vendored 2021-era anndata zarr writer with `anndata.io.write_elem`. Upstream [#235](https://github.com/lilab-bcb/cirrocumulus/pull/235) removes the pin without any of this |
 
 Retired: #232 (docformatter) — upstream switched to ruff in #234, so the hook is gone.
 
@@ -85,8 +85,8 @@ uv pip install --python .venv/bin/python -e . -r requirements-test.txt pyarrow m
 .venv/bin/python -m pytest tests/ -q
 ```
 
-Baseline: `tests/test_de.py` has 64 pre-existing failures (`KeyError: 0`) unrelated to anything
-here. Everything else should pass.
+Baseline on plain `upstream/main`: 64 failures in `tests/test_de.py` (`KeyError: 0`) and 8 in
+`test_prepare_jsonl` (`OverflowError` in `jsonl_io.py`). Everything else should pass.
 
 ## Who uses this
 
