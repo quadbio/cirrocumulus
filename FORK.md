@@ -28,10 +28,15 @@ merged fix is one line out of the recipe below.
 ```bash
 git fetch upstream && git checkout main && git merge --ff-only upstream/main && git push
 git checkout -B integration main
-git merge --no-edit fork/tooling fix/x-stats-sparse-dense fix/dotplot-aggregator-anndata \
-                    fix/anndata-013-none-layer fix/zarr-categorical-obs fix/zarr3
+for b in fork/tooling fix/x-stats-sparse-dense fix/dotplot-aggregator-anndata \
+         fix/anndata-013-none-layer fix/zarr-categorical-obs fix/zarr3; do
+    git merge --no-edit "$b" || break   # resolve, `git commit`, then rerun from the failed branch
+done
 git push --force-with-lease origin integration
 ```
+
+One at a time, not an octopus merge — an octopus refuses the moment any pair conflicts,
+and these branches touch the same files.
 
 That list is the recipe. Drop a branch from it once upstream merges its PR, then delete the branch.
 
