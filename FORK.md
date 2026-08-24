@@ -29,7 +29,7 @@ merged fix is one line out of the recipe below.
 git fetch upstream && git checkout main && git merge --ff-only upstream/main && git push
 git checkout -B integration main
 for b in fork/tooling fix/x-stats-sparse-dense fix/dotplot-aggregator-anndata \
-         fix/anndata-013-none-layer fix/zarr-categorical-obs fix/zarr3; do
+         fix/anndata-013-none-layer fix/zarr-categorical-obs fix/zarr3 fix/pandas3; do
     git merge --no-edit "$b" || break   # resolve, `git commit`, then rerun from the failed branch
 done
 git push --force-with-lease origin integration
@@ -50,6 +50,7 @@ That list is the recipe. Drop a branch from it once upstream merges its PR, then
 | `fix/anndata-013-none-layer` | [#236](https://github.com/lilab-bcb/cirrocumulus/pull/236) | anndata >= 0.13 exposes `None` in `layers` as an alias for `X`, so six call sites treated it as a layer. Broke the parquet and zarr writers |
 | `fix/zarr-categorical-obs` | [#233](https://github.com/lilab-bcb/cirrocumulus/pull/233) | elements anndata writes as *groups* rather than arrays — categoricals, nullable strings — could not be read at all |
 | `fix/zarr3` | [#237](https://github.com/lilab-bcb/cirrocumulus/pull/237) | zarr 3 support: unpins `zarr<3`, and replaces the vendored 2021-era anndata zarr writer with `anndata.io.write_elem`. Upstream [#235](https://github.com/lilab-bcb/cirrocumulus/pull/235) removes the pin without any of this |
+| `fix/pandas3` | [#238](https://github.com/lilab-bcb/cirrocumulus/pull/238) | pandas 3 backs strings with `ArrowStringArray`, which the JSON encoder recurses into until it overflows — `prepare_data --format jsonl` could not write anything. Plus one DE test that built its fixture with `Series.replace` on a categorical |
 
 Retired: #232 (docformatter) — upstream switched to ruff in #234, so the hook is gone.
 
@@ -85,17 +86,14 @@ uv pip install --python .venv/bin/python -e . -r requirements-test.txt pyarrow m
 .venv/bin/python -m pytest tests/ -q
 ```
 
-Measured 2026-08-24, anndata 0.13.2 / zarr 3.3.0:
+Measured 2026-08-24, anndata 0.13.2 / zarr 3.3.0 / pandas 3.0.5:
 
 | | failed | passed |
 | --- | --- | --- |
 | plain `upstream/main` | 88 (+16 errors) | 1144 |
-| `integration` | **24** | **1360** |
+| `integration` | **0** | **1384** |
 
-The 24 that remain are pre-existing and unrelated: 16 in `test_de.py`
-(`TypeError: Cannot setitem on a Categorical with a new category`) and 8 in
-`test_prepare_jsonl` (`OverflowError` in `jsonl_io.py`). Both fail on plain `upstream/main`
-too. Anything beyond those 24 is a regression.
+**`integration` is green.** Any failure is a regression — there is no baseline to subtract.
 
 ## Who uses this
 
