@@ -85,8 +85,17 @@ uv pip install --python .venv/bin/python -e . -r requirements-test.txt pyarrow m
 .venv/bin/python -m pytest tests/ -q
 ```
 
-Baseline on plain `upstream/main`: 64 failures in `tests/test_de.py` (`KeyError: 0`) and 8 in
-`test_prepare_jsonl` (`OverflowError` in `jsonl_io.py`). Everything else should pass.
+Measured 2026-08-24, anndata 0.13.2 / zarr 3.3.0:
+
+| | failed | passed |
+| --- | --- | --- |
+| plain `upstream/main` | 88 (+16 errors) | 1144 |
+| `integration` | **24** | **1360** |
+
+The 24 that remain are pre-existing and unrelated: 16 in `test_de.py`
+(`TypeError: Cannot setitem on a Categorical with a new category`) and 8 in
+`test_prepare_jsonl` (`OverflowError` in `jsonl_io.py`). Both fail on plain `upstream/main`
+too. Anything beyond those 24 is a regression.
 
 ## Who uses this
 
