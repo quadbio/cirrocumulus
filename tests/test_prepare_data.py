@@ -124,6 +124,17 @@ def test_prepare(
     )
 
 
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_prepare_zarr_format(test_data, measures, dimensions, continuous_obs, basis, tmp_path, zarr_format):
+    # anndata >= 0.13 writes zarr v3 by default, so v3 is the shape most stores have on disk
+    anndata.settings.zarr_write_format = zarr_format
+    output_dir = str(tmp_path / "test.zarr")
+    test_data = test_data[:, measures]
+    test_data.obs = test_data.obs[dimensions + continuous_obs]
+    PrepareData(datasets=[test_data], output=output_dir, output_format="zarr").execute()
+    read_and_diff(ZarrDataset(), output_dir, test_data, measures, dimensions, continuous_obs, basis)
+
+
 def test_prepare_jsonl(
     test_data, measures, dimensions, continuous_obs, basis, tmp_path
 ):
