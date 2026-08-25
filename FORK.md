@@ -40,11 +40,45 @@ and these branches touch the same files.
 
 That list is the recipe. Drop a branch from it once upstream merges its PR, then delete the branch.
 
+## Cutting a release
+
+Consumers install a wheel from a GitHub Release. A `git+https://` install gets a server with no
+UI, because the client is a build artifact and `build/` is gitignored.
+
+After rebuilding `integration`:
+
+```bash
+git tag -a quadbio-1.1.61.postN -m "<one line>" integration
+git push origin quadbio-1.1.61.postN
+```
+
+`.github/workflows/release.yml` builds the client, builds the wheel, fails if the wheel ships no
+client, boots the app to fetch `/` and its bundle, then attaches
+`cirrocumulus-1.1.61.postN-py3-none-any.whl` to the release. Pushing `integration` runs everything
+except the publish, so push the branch first and tag only once that is green.
+
+`postN` is sequential; restart at `.post1` when upstream releases a new version. The `quadbio-`
+prefix keeps our tags out of upstream's namespace and is stripped by setuptools_scm, so the
+version is `1.1.61.postN` — after upstream's 1.1.61, before their 1.1.62.
+
+**Never delete a release tag.** `integration` is force-pushed, so the tag is the only thing
+keeping that tree reachable.
+
+Without CI, the same artifact by hand — build the client (below), then:
+
+```bash
+uv build --wheel
+python scripts/check_wheel.py dist/*.whl
+gh release create quadbio-1.1.61.postN dist/*.whl --repo quadbio/cirrocumulus
+```
+
+`--repo` is not optional: in this clone `gh` can resolve to `upstream`.
+
 ## Topics
 
 | branch | upstream PR | what it fixes |
 | --- | --- | --- |
-| `fork/tooling` | — | this file and `scripts/fetch_client.py`. Never upstreamable |
+| `fork/tooling` | — | this file, `scripts/check_wheel.py` and `.github/workflows/release.yml`. Never upstreamable |
 | `fix/x-stats-sparse-dense` | [#230](https://github.com/lilab-bcb/cirrocumulus/pull/230) | `X_stats` returned 2-D columns for sparse `X`, 500ing the composition view, and did not handle dense `X` at all |
 | `fix/dotplot-aggregator-anndata` | [#231](https://github.com/lilab-bcb/cirrocumulus/pull/231) | `DotPlotAggregator` was written for a DataFrame but is passed an AnnData, 500ing the dot plot view; multi-dimension grouping was broken too |
 | `fix/anndata-013-none-layer` | [#236](https://github.com/lilab-bcb/cirrocumulus/pull/236) | anndata >= 0.13 exposes `None` in `layers` as an alias for `X`, so six call sites treated it as a layer. Broke the parquet and zarr writers |
@@ -56,9 +90,19 @@ Retired: #232 (docformatter) — upstream switched to ruff in #234, so the hook 
 
 ## Install
 
+To use it — no clone, no node toolchain, works on Euler and on a Mac:
+
+```bash
+uv tool install <wheel URL from the latest release> --python 3.12
+```
+
+`gli3_merscope_analysis` declares that same URL in its `pixi.toml`.
+
+To develop it:
+
 ```bash
 git checkout integration
-python scripts/fetch_client.py     # populate build/ (see below)
+# build the client -- see below
 uv tool install . --force --python 3.12
 ```
 
@@ -69,18 +113,34 @@ would silently change the running app. (That bit us once.) A regular install sna
 
 ## The `build/` directory
 
-`cirrocumulus/client` is a symlink to gitignored `build/`, which upstream produces with
-`yarn build`. We do not build it: it needs a node toolchain and ~50 npm packages, and there is no
-node module on Euler. Published wheels already ship the built client, so
-`scripts/fetch_client.py` unpacks it from one and records the version in `build/CLIENT_VERSION`.
-Hatchling follows the symlink, so the client ends up in our own wheel too.
+`cirrocumulus/client` is a symlink to gitignored `build/`, which `yarn build` produces. CI builds
+it for every release, so the wheel carries the client. Locally, on Euler:
 
-This is sound **only because every change here is server-side Python**. If anyone ever patches
-`src/`, the client has to be built for real and this shortcut has to go.
+```bash
+module load stack/2025-06 gcc/12.2.0 node-js/22.4.0 eth_proxy
+export COREPACK_HOME="$SCRATCH/corepack"      # the module ships corepack, not npm
+corepack prepare yarn@1.22.22 --activate      # yarn.lock is v1 / Classic
+corepack yarn install --frozen-lockfile --ignore-engines
+corepack yarn build                           # "Compiled with warnings", exit 0
+```
+
+`--ignore-engines` is needed because `puppeteer` wants node >= 22.12 and Euler caps at 22.4. It is
+a devDependency for the e2e tests only; `react-scripts` is unaffected. Do not carry the flag into
+CI, where node 26 satisfies it and an engine failure should be loud.
+
+The result is ~12 MB, three quarters of it the source map. `GENERATE_SOURCEMAP=false` would cut it
+to ~2.7 MB, but upstream's own wheels ship the map, so we keep it and keep the UI debuggable.
+
+**An empty `build/` produces a wheel with no client, silently** — no error, just a 404 on `/` at
+runtime. That is what `scripts/check_wheel.py` exists to catch, in CI and by hand.
+
+To run the tests you do not need the client, only a symlink that resolves — `mkdir -p build` is
+enough. A *dangling* symlink breaks every build; an *empty* target does not.
 
 ## Tests
 
 ```bash
+mkdir -p build     # only needed if you have not built the client
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -e . -r requirements-test.txt pyarrow mongomock
 .venv/bin/python -m pytest tests/ -q
@@ -97,4 +157,6 @@ Measured 2026-08-24, anndata 0.13.2 / zarr 3.3.0 / pandas 3.0.5:
 
 ## Who uses this
 
-`gli3_merscope_analysis` — `gli3-merscope-analysis viewer launch`. See that repo's `AGENTS.md`.
+`gli3_merscope_analysis` — `gli3-merscope-analysis viewer launch`. It declares the release wheel
+in the `viewer` feature of its `pixi.toml`; updating cirro there means bumping that URL. See that
+repo's `AGENTS.md`.
