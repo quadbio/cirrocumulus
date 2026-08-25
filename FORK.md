@@ -42,8 +42,8 @@ That list is the recipe. Drop a branch from it once upstream merges its PR, then
 
 ## Cutting a release
 
-Consumers install a wheel from a GitHub Release. A `git+https://` install gets a server with no
-UI, because the client is a build artifact and `build/` is gitignored.
+Consumers install a wheel from a GitHub Release; a `git+https://` install has no UI (see
+"The `build/` directory").
 
 After rebuilding `integration`:
 
@@ -52,10 +52,9 @@ git tag -a quadbio-1.1.61.postN -m "<one line>" integration
 git push origin quadbio-1.1.61.postN
 ```
 
-`.github/workflows/release.yml` builds the client, builds the wheel, fails if the wheel ships no
-client, boots the app to fetch `/` and its bundle, then attaches
-`cirrocumulus-1.1.61.postN-py3-none-any.whl` to the release. Pushing `integration` runs everything
-except the publish, so push the branch first and tag only once that is green.
+`.github/workflows/release.yml` builds the client, checks the wheel really ships it, serves it
+once, and attaches `cirrocumulus-1.1.61.postN-py3-none-any.whl`. Pushing `integration` runs
+everything except the publish — push the branch first, tag once it is green.
 
 `postN` is sequential; restart at `.post1` when upstream releases a new version. The `quadbio-`
 prefix keeps our tags out of upstream's namespace and is stripped by setuptools_scm, so the
@@ -64,7 +63,7 @@ version is `1.1.61.postN` — after upstream's 1.1.61, before their 1.1.62.
 **Never delete a release tag.** `integration` is force-pushed, so the tag is the only thing
 keeping that tree reachable.
 
-Without CI, the same artifact by hand — build the client (below), then:
+Without CI — build the client (below), then:
 
 ```bash
 uv build --wheel
@@ -124,12 +123,9 @@ corepack yarn install --frozen-lockfile --ignore-engines
 corepack yarn build                           # "Compiled with warnings", exit 0
 ```
 
-`--ignore-engines` is needed because `puppeteer` wants node >= 22.12 and Euler caps at 22.4. It is
-a devDependency for the e2e tests only; `react-scripts` is unaffected. Do not carry the flag into
-CI, where node 26 satisfies it and an engine failure should be loud.
-
-The result is ~12 MB, three quarters of it the source map. `GENERATE_SOURCEMAP=false` would cut it
-to ~2.7 MB, but upstream's own wheels ship the map, so we keep it and keep the UI debuggable.
+`--ignore-engines` is needed because `puppeteer` wants node >= 22.12 and Euler caps at 22.4; it is
+a devDependency for the e2e tests only. Do not carry it into CI, where node 26 satisfies the
+constraint and an engine failure should be loud.
 
 **An empty `build/` produces a wheel with no client, silently** — no error, just a 404 on `/` at
 runtime. That is what `scripts/check_wheel.py` exists to catch, in CI and by hand.

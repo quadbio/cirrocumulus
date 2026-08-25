@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Fail unless a built wheel actually ships the web client.
 
-``cirrocumulus/client`` is a symlink to gitignored ``build/``. Hatchling follows it, so a
-wheel built after ``yarn build`` carries the client -- but a wheel built with ``build/``
-empty is produced *silently*, with no error and no client, and the failure only shows up
-as a 404 on ``/`` at runtime. This is the gate that catches that.
+An empty ``build/`` yields a client-less wheel silently -- no error, just a 404 on ``/``
+at runtime. See FORK.md.
 
     python scripts/check_wheel.py dist/cirrocumulus-*.whl
 """
