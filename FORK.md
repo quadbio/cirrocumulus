@@ -83,7 +83,7 @@ gh release create quadbio-1.1.61.postN dist/*.whl --repo quadbio/cirrocumulus
 | `fix/anndata-013-none-layer` | [#236](https://github.com/lilab-bcb/cirrocumulus/pull/236) | anndata >= 0.13 exposes `None` in `layers` as an alias for `X`, so six call sites treated it as a layer. Broke the parquet and zarr writers |
 | `fix/zarr-categorical-obs` | [#233](https://github.com/lilab-bcb/cirrocumulus/pull/233) | elements anndata writes as *groups* rather than arrays — categoricals, nullable strings — could not be read at all |
 | `fix/zarr3` | [#237](https://github.com/lilab-bcb/cirrocumulus/pull/237) | zarr 3 support: unpins `zarr<3`, and replaces the vendored 2021-era anndata zarr writer with `anndata.io.write_elem`. Upstream [#235](https://github.com/lilab-bcb/cirrocumulus/pull/235) removes the pin without any of this |
-| `fix/pandas3` | [#238](https://github.com/lilab-bcb/cirrocumulus/pull/238) | pandas 3 backs strings with `ArrowStringArray`, which the JSON encoder recurses into until it overflows — `prepare_data --format jsonl` could not write anything. Plus one DE test that built its fixture with `Series.replace` on a categorical |
+| `fix/pandas3` | [#238](https://github.com/lilab-bcb/cirrocumulus/pull/238) | pandas 3 backs strings with `ArrowStringArray`, which the JSON encoder recurses into until it overflows. Broke `prepare_data --format jsonl` entirely, and 500'd `/api/data` for every categorical `obs` — the UI loaded but could not colour by anything textual. Plus one DE test that built its fixture with `Series.replace` on a categorical |
 
 Retired: #232 (docformatter) — upstream switched to ruff in #234, so the hook is gone.
 
