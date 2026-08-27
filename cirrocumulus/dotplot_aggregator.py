@@ -15,7 +15,9 @@ class DotPlotAggregator:
         for d in self.dimensions:
             names.extend(d if isinstance(d, list) else [d])
 
-        columns = {name: adata.obs[name] for name in dict.fromkeys(names) if name in adata.obs}
+        columns = {
+            name: adata.obs[name] for name in dict.fromkeys(names) if name in adata.obs
+        }
 
         var_index = list(adata.var.index)
         for measure in self.var_measures:
@@ -65,9 +67,9 @@ class DotPlotAggregator:
                 continue
             # aggregate only the measures: with several dimensions the frame also holds
             # the individual categorical columns, which have no mean
-            agg_result = df.groupby(dimension_name, observed=True)[list(var_measures)].agg(
-                [mean, percent_expressed]
-            )
+            agg_result = df.groupby(dimension_name, observed=True)[
+                list(var_measures)
+            ].agg([mean, percent_expressed])
 
             values = []
             dotplot_result = {
