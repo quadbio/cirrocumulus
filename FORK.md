@@ -68,8 +68,14 @@ strings upstream can publish at will.
 
 The `quadbio-` tag prefix keeps our tags out of upstream's namespace. `tag_regex` in
 `pyproject.toml` strips it while keeping the local segment, which setuptools_scm's default would
-otherwise drop; `check_wheel.py` fails the build if `+quadbio.` ever goes missing. Off-tag builds
-keep the marker too — one commit past a tag gives `1.1.62.dev1+quadbio.N.g<sha>`.
+otherwise drop. The prefix is **optional** in that regex on purpose: upstream's own tags are
+reachable from `main` too, and a regex matching only ours makes setuptools_scm raise
+`Can't parse version from tag '1.1.61'` rather than fall back.
+
+`check_wheel.py` fails a *release* build whose version has no `+quadbio.` segment. Builds off an
+untagged `main` are `.devN` artifacts that are never published, so they are exempt. Once a
+`quadbio-*` tag is reachable they carry the marker anyway — one commit past a tag gives
+`1.1.62.dev1+quadbio.N.g<sha>`.
 
 **Never delete a release tag.** For `quadbio-1.1.61.post1` and `.post2` this is literal: they were
 cut from the old force-pushed `integration` and are reachable from no branch at all, so the tag is
