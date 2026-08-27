@@ -1,0 +1,11 @@
+# test.yml is our merge gate but is upstream's file, and it pins `actions/setup-python@v3`
+# plus floating `@v7` tags. Keep the actions we depend on current.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: [ "*" ]
