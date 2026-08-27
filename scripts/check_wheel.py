@@ -13,7 +13,6 @@ import fnmatch
 import sys
 import zipfile
 
-
 INDEX = "cirrocumulus/client/index.html"
 BUNDLE = "cirrocumulus/client/static/js/*.js"
 

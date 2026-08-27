@@ -30,13 +30,24 @@ def test_X_stats_matches_dense(stats_data):
     # sparse and dense reductions accumulate in a different order, so float32 sums of
     # near-zero scaled values differ in the last bits -- compare with an absolute floor
     scale = float(np.abs(dense).max())
-    np.testing.assert_allclose(df["min"].values, dense.min(axis=0), rtol=1e-5, atol=1e-5 * scale)
-    np.testing.assert_allclose(df["max"].values, dense.max(axis=0), rtol=1e-5, atol=1e-5 * scale)
     np.testing.assert_allclose(
-        df["sum"].values, dense.sum(axis=0), rtol=1e-4, atol=1e-4 * scale * dense.shape[0] ** 0.5
+        df["min"].values, dense.min(axis=0), rtol=1e-5, atol=1e-5 * scale
     )
-    np.testing.assert_allclose(df["mean"].values, dense.mean(axis=0), rtol=1e-4, atol=1e-5 * scale)
-    np.testing.assert_array_equal(df["numExpressed"].values, np.count_nonzero(dense, axis=0))
+    np.testing.assert_allclose(
+        df["max"].values, dense.max(axis=0), rtol=1e-5, atol=1e-5 * scale
+    )
+    np.testing.assert_allclose(
+        df["sum"].values,
+        dense.sum(axis=0),
+        rtol=1e-4,
+        atol=1e-4 * scale * dense.shape[0] ** 0.5,
+    )
+    np.testing.assert_allclose(
+        df["mean"].values, dense.mean(axis=0), rtol=1e-4, atol=1e-5 * scale
+    )
+    np.testing.assert_array_equal(
+        df["numExpressed"].values, np.count_nonzero(dense, axis=0)
+    )
 
 
 def test_feature_aggregator_summary(stats_data, measures, dimensions):

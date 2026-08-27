@@ -18,6 +18,8 @@ def layer_names(dataset):
     mapping directly yields a layer that is not one.
     """
     return [key for key in dataset.layers.keys() if key is not None]
+
+
 def is_encoded_element(node):
     """Test whether a node of a backed store (h5py or zarr) carries an anndata encoding.
 
@@ -393,6 +395,8 @@ def dataset_schema(dataset, n_features=10):
     if isinstance(dataset, anndata.AnnData):
         shape = dataset.shape
     else:  # X is either a dense array or a group holding a sparse matrix
-        shape = dataset.X.attrs["shape"] if "shape" in dataset.X.attrs else dataset.X.shape
+        shape = (
+            dataset.X.attrs["shape"] if "shape" in dataset.X.attrs else dataset.X.shape
+        )
     schema_dict["shape"] = shape
     return schema_dict

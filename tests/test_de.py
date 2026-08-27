@@ -135,7 +135,9 @@ def test_de_4_groups(sparse):
     adata2 = get_example_data(sparse)
     # rename_categories, not replace: pandas 3 refuses to set a value outside the
     # existing categories on a categorical Series
-    adata2.obs["sc_groups"] = adata2.obs["sc_groups"].cat.rename_categories({0: 2, 1: 3})
+    adata2.obs["sc_groups"] = adata2.obs["sc_groups"].cat.rename_categories(
+        {0: 2, 1: 3}
+    )
     adata = anndata.concat((adata1, adata2))
     adata.obs_names_make_unique()
     batch_size = 3

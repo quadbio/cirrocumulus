@@ -125,14 +125,24 @@ def test_prepare(
 
 
 @pytest.mark.parametrize("zarr_format", [2, 3])
-def test_prepare_zarr_format(test_data, measures, dimensions, continuous_obs, basis, tmp_path, zarr_format):
+def test_prepare_zarr_format(
+    test_data, measures, dimensions, continuous_obs, basis, tmp_path, zarr_format
+):
     # anndata >= 0.13 writes zarr v3 by default, so v3 is the shape most stores have on disk
     anndata.settings.zarr_write_format = zarr_format
     output_dir = str(tmp_path / "test.zarr")
     test_data = test_data[:, measures]
     test_data.obs = test_data.obs[dimensions + continuous_obs]
     PrepareData(datasets=[test_data], output=output_dir, output_format="zarr").execute()
-    read_and_diff(ZarrDataset(), output_dir, test_data, measures, dimensions, continuous_obs, basis)
+    read_and_diff(
+        ZarrDataset(),
+        output_dir,
+        test_data,
+        measures,
+        dimensions,
+        continuous_obs,
+        basis,
+    )
 
 
 def test_prepare_jsonl(
@@ -158,7 +168,9 @@ def test_layer_names_skips_the_x_alias(test_data):
     assert layer_names(adata) == ["counts"]
 
 
-def test_read_anndata_zarr(test_data, measures, dimensions, continuous_obs, basis, tmp_path):
+def test_read_anndata_zarr(
+    test_data, measures, dimensions, continuous_obs, basis, tmp_path
+):
     # a zarr store written by anndata itself, not by PrepareData: anndata >= 0.8 encodes a
     # categorical obs column as a group (codes + categories), not as an array
     path = str(tmp_path / "test.zarr")
@@ -177,7 +189,9 @@ def test_read_anndata_zarr(test_data, measures, dimensions, continuous_obs, basi
     read_and_diff(reader, path, test_data, measures, dimensions, continuous_obs, basis)
 
 
-def test_read_anndata_zarr_group_encoded_elements(test_data, measures, dimensions, tmp_path):
+def test_read_anndata_zarr_group_encoded_elements(
+    test_data, measures, dimensions, tmp_path
+):
     """Elements anndata writes as groups rather than arrays must still be readable.
 
     A nullable string index and a DataFrame-valued ``obsm`` both used to raise, because the
@@ -200,7 +214,10 @@ def test_read_anndata_zarr_group_encoded_elements(test_data, measures, dimension
     assert list(schema["shape"]) == list(test_data.shape)
 
     adata = reader.read_dataset(
-        filesystem=fs, path=path, dataset=dict(id=""), keys=dict(X=measures, obs=dimensions)
+        filesystem=fs,
+        path=path,
+        dataset=dict(id=""),
+        keys=dict(X=measures, obs=dimensions),
     )
     assert list(adata.var.index) == list(test_data.var.index)
     assert list(adata.obs.columns) == dimensions

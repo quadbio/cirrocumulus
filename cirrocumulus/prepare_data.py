@@ -10,7 +10,11 @@ import scipy.sparse
 from pandas import CategoricalDtype
 
 from cirrocumulus.anndata_dataset import read_adata
-from cirrocumulus.anndata_util import dataset_schema, get_scanpy_marker_keys, layer_names
+from cirrocumulus.anndata_util import (
+    dataset_schema,
+    get_scanpy_marker_keys,
+    layer_names,
+)
 from cirrocumulus.io_util import SPATIAL_HELP, filter_markers, get_markers, unique_id
 from cirrocumulus.util import get_fs, open_file, to_json
 
