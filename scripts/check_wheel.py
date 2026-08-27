@@ -31,8 +31,12 @@ def main(path: str) -> int:
         )
     # Wheel filenames are name-version-pytag-abitag-platform.whl, and PEP 440 local
     # separators are normalised to '.' in the filename, so '+quadbio.' survives intact.
+    #
+    # Only release builds are checked. A build off an untagged main is a `.devN` artifact
+    # that is never published, and before the first `quadbio-*` tag is reachable it has no
+    # local segment to carry.
     version = os.path.basename(path).split("-")[1]
-    if LOCAL not in version:
+    if ".dev" not in version and LOCAL not in version:
         sys.exit(
             f"{path} is versioned {version!r}, which has no {LOCAL!r} local segment.\n"
             "Either the tag was not `quadbio-<version>+quadbio.N`, or tag_regex in\n"

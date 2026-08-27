@@ -70,8 +70,12 @@ source = 'vcs'
 # e.g. quadbio-1.1.61+quadbio.4. setuptools_scm's default tag_regex captures [^\+]*
 # and would silently drop the local part -- which is the half that makes the version
 # unforgeable, since PyPI must not accept local versions.
+#
+# The `quadbio-` prefix is optional on purpose: upstream's own tags (1.1.61, 1.1.59.post1,
+# ...) are reachable from main too, and a regex that only matched ours made setuptools_scm
+# raise `Can't parse version from tag '1.1.61'` instead of falling back.
 [tool.hatch.version.raw-options]
-tag_regex = '^quadbio-(?P<version>.+)$'
+tag_regex = '^(?:quadbio-)?(?P<version>.+)$'
 
 [tool.ruff]
 line-length = 88
