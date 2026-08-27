@@ -1,14 +1,13 @@
 # Builds a wheel containing the web client and publishes it as a Release. See FORK.md.
 #
-# Pushing `integration` builds and verifies; pushing a `quadbio-*` tag also publishes.
-# No `workflow_dispatch`: GitHub only offers it on the default branch, which here is the
-# upstream mirror.
+# Pushing `main` builds and verifies; pushing a `quadbio-*` tag also publishes.
 name: release
 
 on:
   push:
-    branches: [ integration ]
+    branches: [ main ]
     tags: [ 'quadbio-*' ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -80,18 +79,20 @@ jobs:
           path: dist/*.whl
 
       # --repo: in a fork clone gh can otherwise resolve to upstream.
+      # event_name: workflow_dispatch's ref picker offers tags too, and re-creating an
+      # existing release fails late, after a full client build.
       - name: Publish the release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" dist/*.whl \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
-            --notes "Built from \`integration\`, web client included.
+            --notes "Built from \`main\`, web client included.
 
           \`\`\`
           uv tool install <the wheel below>
           \`\`\`
 
-          See [FORK.md](https://github.com/quadbio/cirrocumulus/blob/integration/FORK.md)."
+          See [FORK.md](https://github.com/quadbio/cirrocumulus/blob/main/FORK.md)."
