@@ -51,17 +51,25 @@ Consumers install a wheel from a GitHub Release; a `git+https://` install has no
 [The `build/` directory](#the-build-directory)).
 
 ```bash
-git tag -a quadbio-1.1.61.postN -m "<one line>" main
-git push origin quadbio-1.1.61.postN
+git tag -a quadbio-1.1.61+quadbio.N -m "<one line>" main
+git push origin quadbio-1.1.61+quadbio.N
 ```
 
 `.github/workflows/release.yml` builds the client, runs `scripts/check_wheel.py`, serves the wheel
-once, and attaches `cirrocumulus-1.1.61.postN-py3-none-any.whl`. Every push to `main` runs all of
-that except the publish, so tag once `main` is green. `workflow_dispatch` reruns it by hand.
+once, and attaches `cirrocumulus-1.1.61+quadbio.N-py3-none-any.whl`. Every push to `main` runs all
+of that except the publish, so tag once `main` is green. `workflow_dispatch` reruns it by hand.
 
-`postN` is sequential; restart at `.post1` when upstream releases a new version. The `quadbio-`
-prefix keeps our tags out of upstream's namespace and is stripped by setuptools_scm, so the
-version is `1.1.61.postN` — after upstream's 1.1.61, before their 1.1.62.
+`1.1.61` is the upstream version we sit on; `+quadbio.N` is a **PEP 440 local version identifier**,
+sequential, restarting at `.1` when upstream releases a new version. Local versions are the
+mechanism for "upstream's release plus our patches", and PyPI *must not* accept them — which is
+exactly why ours cannot collide with upstream's. That matters here: upstream has 86 `.postN` tags
+on PyPI and has already released `1.1.61`, so the old `1.1.61.postN` scheme was claiming version
+strings upstream can publish at will.
+
+The `quadbio-` tag prefix keeps our tags out of upstream's namespace. `tag_regex` in
+`pyproject.toml` strips it while keeping the local segment, which setuptools_scm's default would
+otherwise drop; `check_wheel.py` fails the build if `+quadbio.` ever goes missing. Off-tag builds
+keep the marker too — one commit past a tag gives `1.1.62.dev1+quadbio.N.g<sha>`.
 
 **Never delete a release tag.** For `quadbio-1.1.61.post1` and `.post2` this is literal: they were
 cut from the old force-pushed `integration` and are reachable from no branch at all, so the tag is
