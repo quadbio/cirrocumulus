@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Fail unless a built wheel actually ships the web client.
+"""Fail unless a built wheel ships the web client and carries the fork's version.
 
 An empty ``build/`` yields a client-less wheel silently -- no error, just a 404 on ``/``
-at runtime. See FORK.md.
+at runtime. And a wheel without our ``+quadbio.N`` local version claims a version string
+upstream is free to publish. See FORK.md.
 
     python scripts/check_wheel.py dist/cirrocumulus-*.whl
 """
@@ -10,11 +11,13 @@ at runtime. See FORK.md.
 from __future__ import annotations
 
 import fnmatch
+import os
 import sys
 import zipfile
 
 INDEX = "cirrocumulus/client/index.html"
 BUNDLE = "cirrocumulus/client/static/js/*.js"
+LOCAL = "+quadbio."
 
 
 def main(path: str) -> int:
@@ -26,7 +29,16 @@ def main(path: str) -> int:
             f"({INDEX}: {INDEX in names}, {BUNDLE}: {len(bundles)}).\n"
             "Populate build/ with `yarn build` and rebuild -- see FORK.md."
         )
-    print(f"{path}: {len(names)} files, client entry point {bundles[0]}")
+    # Wheel filenames are name-version-pytag-abitag-platform.whl, and PEP 440 local
+    # separators are normalised to '.' in the filename, so '+quadbio.' survives intact.
+    version = os.path.basename(path).split("-")[1]
+    if LOCAL not in version:
+        sys.exit(
+            f"{path} is versioned {version!r}, which has no {LOCAL!r} local segment.\n"
+            "Either the tag was not `quadbio-<version>+quadbio.N`, or tag_regex in\n"
+            "pyproject.toml stopped capturing it -- see FORK.md."
+        )
+    print(f"{path}: {len(names)} files, version {version}, entry point {bundles[0]}")
     return 0
 
 

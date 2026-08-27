@@ -1,3 +1,11 @@
+..
+
+    **This is the quadbio fork of cirrocumulus.** It carries fixes for anndata 0.13, zarr 3 and
+    pandas 3 that upstream does not have. Wheels are versioned ``1.1.61+quadbio.N`` and published
+    as GitHub Releases on `quadbio/cirrocumulus <https://github.com/quadbio/cirrocumulus>`_, never
+    to PyPI. Upstream is `lilab-bcb/cirrocumulus <https://github.com/lilab-bcb/cirrocumulus>`_; see
+    `FORK.md <https://github.com/quadbio/cirrocumulus/blob/main/FORK.md>`_ for what differs.
+
 Cirrocumulus
 ----------------
 

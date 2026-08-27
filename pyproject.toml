@@ -9,7 +9,12 @@ readme = 'README.rst'
 authors = [
     { name = 'Joshua Gould', email = 'cirrocumulus@googlegroups.com' },
 ]
-urls.Source = 'https://github.com/lilab-bcb/cirrocumulus'
+maintainers = [
+    { name = 'Marius Lange' },
+]
+urls.Homepage = 'https://github.com/quadbio/cirrocumulus'
+urls.Source = 'https://github.com/quadbio/cirrocumulus'
+urls.Upstream = 'https://github.com/lilab-bcb/cirrocumulus'
 urls.Documentation = "https://cirrocumulus.readthedocs.io/"
 
 license = { file = 'LICENSE' }
@@ -61,7 +66,12 @@ only-include = ["cirrocumulus", "build"]
 [tool.hatch.version]
 source = 'vcs'
 
-dev = ['pre-commit', 'isort', 'black']
+# Our tags are `quadbio-<version>` where <version> carries a PEP 440 local segment,
+# e.g. quadbio-1.1.61+quadbio.4. setuptools_scm's default tag_regex captures [^\+]*
+# and would silently drop the local part -- which is the half that makes the version
+# unforgeable, since PyPI must not accept local versions.
+[tool.hatch.version.raw-options]
+tag_regex = '^quadbio-(?P<version>.+)$'
 
 [tool.ruff]
 line-length = 88
