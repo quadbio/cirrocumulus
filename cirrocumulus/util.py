@@ -4,15 +4,10 @@ from urllib.parse import urlparse
 import fsspec
 import numpy as np
 import pandas as pd
-import pandas._libs.json as ujson
 from flask import make_response
+from pandas.io.json import ujson_dumps
 
 from cirrocumulus.envir import CIRRO_DATASET_PROVIDERS
-
-try:
-    _dumps = ujson.dumps
-except AttributeError:
-    _dumps = ujson.ujson_dumps
 
 
 def to_json_array(values):
@@ -32,7 +27,7 @@ def dumps(data, **kwargs):
         data = {k: to_json_array(v) for k, v in data.items()}
     else:
         data = to_json_array(data)
-    return _dumps(data, **kwargs)
+    return ujson_dumps(data, **kwargs)
 
 
 def add_dataset_providers():

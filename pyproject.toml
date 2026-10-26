@@ -41,7 +41,7 @@ dependencies = [
     "fsspec",
     "gunicorn",
     "numpy",
-    "pandas",
+    "pandas>=2.2",
     "pymongo",
     "requests",
     "scipy",
